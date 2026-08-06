@@ -1,0 +1,31 @@
+{
+  "name": "myip",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "homepage": "https://myip.sharapov.biz",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sharapov-outsource/myip.git"
+  },
+  "bugs": "https://github.com/sharapov-outsource/myip/issues",
+  "description": "External IP address and every piece of technical information available about a visitor",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "check:i18n": "node scripts/check-i18n.js",
+    "check:syntax": "node --check public/app.js && node --check public/i18n.js && node --check server/index.js && node --check server/lookup.js",
+    "smoke": "node scripts/smoke.js",
+    "test": "npm run check:syntax && npm run check:i18n && npm run smoke"
+  },
+  "dependencies": {
+    "@fastify/rate-limit": "^10.2.2",
+    "@fastify/static": "^10.1.2",
+    "fastify": "^5.2.1",
+    "yaml": "^2.7.0"
+  }
+}

@@ -1,0 +1,163 @@
+name: myip CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: myip-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Syntax check
+        run: |
+          node --check public/app.js
+          node --check public/i18n.js
+          node --check server/index.js
+          node --check server/lookup.js
+
+      - name: Verify translation dictionaries
+        run: node scripts/check-i18n.js
+
+      - name: Smoke test
+        run: node scripts/smoke.js
+
+  build-and-push:
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    environment: Prod
+    env:
+      CONTAINER: myip
+      PORT: 3021
+      ENV_DIR: /opt/myip
+    steps:
+      - name: Validate deploy config
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST || vars.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER || vars.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY || vars.DEPLOY_SSH_KEY }}
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME || vars.GHCR_USERNAME }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN || vars.GHCR_TOKEN }}
+        run: |
+          test -n "$DEPLOY_HOST" || (echo "DEPLOY_HOST is empty"; exit 1)
+          test -n "$DEPLOY_USER" || (echo "DEPLOY_USER is empty"; exit 1)
+          test -n "$DEPLOY_SSH_KEY" || (echo "DEPLOY_SSH_KEY is empty"; exit 1)
+          test -n "$GHCR_USERNAME" || (echo "GHCR_USERNAME is empty"; exit 1)
+          test -n "$GHCR_TOKEN" || (echo "GHCR_TOKEN is empty"; exit 1)
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST || vars.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER || vars.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY || vars.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || vars.DEPLOY_PORT || 22 }}
+          script_stop: true
+          envs: CONTAINER,PORT,ENV_DIR
+          script: |
+            set -e
+            IMAGE="ghcr.io/${{ github.repository }}:latest"
+
+            docker login ghcr.io -u "${{ secrets.GHCR_USERNAME || vars.GHCR_USERNAME }}" -p "${{ secrets.GHCR_TOKEN || vars.GHCR_TOKEN }}"
+            docker pull "$IMAGE"
+
+            docker network create ft-private >/dev/null 2>&1 || true
+            docker rm -f "$CONTAINER" >/dev/null 2>&1 || true
+
+            ENV_FILE_ARG=""
+            if [ -f "$ENV_DIR/.env" ]; then
+              ENV_FILE_ARG="--env-file $ENV_DIR/.env"
+            fi
+
+            docker run -d \
+              --name "$CONTAINER" \
+              --restart unless-stopped \
+              --network ft-private \
+              --init \
+              --memory 384m \
+              --pids-limit 256 \
+              --read-only \
+              --tmpfs /tmp:rw,noexec,nosuid,size=16m \
+              --security-opt no-new-privileges \
+              -e HOSTNAME=0.0.0.0 \
+              -e PORT=$PORT \
+              -e TRUST_PROXY=true \
+              -e HSTS=true \
+              $ENV_FILE_ARG \
+              -p "127.0.0.1:${PORT}:${PORT}" \
+              "$IMAGE"
+
+            sleep 5
+            if [ "$(docker inspect -f '{{.State.Running}}' "$CONTAINER" 2>/dev/null)" != "true" ]; then
+              echo "$CONTAINER failed to start. Last logs:"
+              docker logs --tail 200 "$CONTAINER" || true
+              exit 1
+            fi
+
+            # Container is up — make sure the application actually answers.
+            for i in $(seq 1 10); do
+              if docker exec "$CONTAINER" node -e "fetch('http://127.0.0.1:${PORT}/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"; then
+                echo "healthz OK"
+                break
+              fi
+              if [ "$i" = "10" ]; then
+                echo "healthz did not respond. Last logs:"
+                docker logs --tail 200 "$CONTAINER" || true
+                exit 1
+              fi
+              sleep 2
+            done
+
+            docker image prune -f >/dev/null 2>&1 || true
+
+            echo "$CONTAINER is running:"
+            docker ps --filter "name=^${CONTAINER}$" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"

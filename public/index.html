@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<meta name="description" content="External IP address, ISP, geolocation, geocoding and browser fingerprint">
+<title>myip</title>
+<link rel="stylesheet" href="/static/styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9B%B0%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <div class="logo">🛰</div>
+      <div>
+        <h1 data-i18n="h1">My IP</h1>
+        <div class="sub" data-i18n="subtitle"></div>
+      </div>
+    </div>
+    <div class="tools">
+      <select id="lang" aria-label="Language"></select>
+      <button id="btn-refresh" class="primary"><span aria-hidden="true">↻</span><span data-i18n="btn_refresh"></span></button>
+      <button id="btn-copy-json"><span aria-hidden="true">⧉</span><span data-i18n="btn_copy_json"></span></button>
+      <button id="btn-save-json"><span aria-hidden="true">↓</span><span data-i18n="btn_save_json"></span></button>
+      <a class="ghlink" href="https://github.com/sharapov-outsource/myip"
+         target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </header>
+
+  <form class="search" id="search-form">
+    <input id="search-ip" type="text" inputmode="text" spellcheck="false" autocomplete="off"
+           placeholder="8.8.8.8 · 2001:4860:4860::8888" aria-label="IP">
+    <button type="submit" class="primary"><span aria-hidden="true">🔍</span><span data-i18n="btn_lookup"></span></button>
+    <button type="button" id="btn-mine"><span aria-hidden="true">📍</span><span data-i18n="btn_my_ip"></span></button>
+  </form>
+
+  <section class="hero">
+    <div class="hero-label" data-i18n="hero_label"></div>
+    <div class="ip-line">
+      <span class="ip" id="hero-ip">…</span>
+      <button class="icon-btn" id="btn-copy-ip"><span aria-hidden="true">⧉</span><span data-i18n="btn_copy_ip"></span></button>
+    </div>
+    <div class="hero-meta" id="hero-meta"></div>
+  </section>
+
+  <div id="alerts"></div>
+
+  <main class="grid">
+
+    <section class="card">
+      <h2><span class="ico" aria-hidden="true">🌐</span><span data-i18n="card_ips"></span></h2>
+      <div class="row"><span class="k" data-i18n="k_ipv4"></span><span class="v skeleton" id="ipv4"></span></div>
+      <div class="row"><span class="k" data-i18n="k_ipv6"></span><span class="v skeleton" id="ipv6"></span></div>
+      <div class="row"><span class="k" data-i18n="k_proto"></span><span class="v skeleton" id="ip-type"></span></div>
+      <div class="row"><span class="k" data-i18n="k_network"></span><span class="v skeleton" id="ip-network"></span></div>
+      <div class="row"><span class="k" data-i18n="k_ptr"></span><span class="v skeleton" id="ip-hostname"></span></div>
+      <div class="row"><span class="k" data-i18n="k_rir"></span><span class="v skeleton" id="ip-rir"></span></div>
+      <div class="note" data-i18n="note_ipv6"></div>
+    </section>
+
+    <section class="card">
+      <h2><span class="ico" aria-hidden="true">🏢</span><span data-i18n="card_isp"></span></h2>
+      <div class="row"><span class="k" data-i18n="k_isp"></span><span class="v skeleton big" id="net-isp"></span></div>
+      <div class="row"><span class="k" data-i18n="k_org"></span><span class="v skeleton" id="net-org"></span></div>
+      <div class="row"><span class="k" data-i18n="k_asn"></span><span class="v skeleton" id="net-asn"></span></div>
+      <div class="row"><span class="k" data-i18n="k_as_owner"></span><span class="v skeleton" id="net-asorg"></span></div>
+      <div class="row"><span class="k" data-i18n="k_domain"></span><span class="v skeleton" id="net-domain"></span></div>
+      <div class="row"><span class="k" data-i18n="k_net_type"></span><span class="v skeleton" id="net-type"></span></div>
+      <div class="row"><span class="k" data-i18n="k_route"></span><span class="v skeleton" id="net-route"></span></div>
+      <div class="row"><span class="k" data-i18n="k_abuse"></span><span class="v skeleton" id="net-abuse"></span></div>
+    </section>
+
+    <section class="card">
+      <h2><span class="ico" aria-hidden="true">📇</span><span data-i18n="card_rdap"></span></h2>
+      <div class="row"><span class="k" data-i18n="k_rd_name"></span><span class="v skeleton" id="rd-name"></span></div>
+      <div class="row"><span class="k" data-i18n="k_rd_range"></span><span class="v skeleton" id="rd-range"></span></div>
+      <div class="row"><span class="k" data-i18n="k_rd_cidr"></span><span class="v skeleton" id="rd-cidr"></span></div>
+      <div class="row"><span class="k" data-i18n="k_rd_type"></span><span class="v skeleton" id="rd-type"></span></div>
+      <div class="row"><span class="k" data-i18n="k_rd_holder"></span><span class="v skeleton" id="rd-holder"></span></div>
+      <div class="row"><span class="k" data-i18n="k_rd_country"></span><span class="v skeleton" id="rd-country"></span></div>
+      <div class="row"><span class="k" data-i18n="k_rd_rir"></span><span class="v skeleton" id="rd-rir"></span></div>
+      <div class="row"><span class="k" data-i18n="k_rd_reg"></span><span class="v skeleton" id="rd-registered"></span></div>
+      <div class="row"><span class="k" data-i18n="k_rd_upd"></span><span class="v skeleton" id="rd-updated"></span></div>
+      <div class="row"><span class="k" data-i18n="k_abuse"></span><span class="v skeleton" id="rd-abuse"></span></div>
+      <div class="note" data-i18n="note_rdap"></div>
+    </section>
+
+    <section class="card">
+      <h2><span class="ico" aria-hidden="true">🕵️</span><span data-i18n="card_anon"></span></h2>
+      <div class="row"><span class="k" data-i18n="k_vpn"></span><span class="v skeleton" id="sec-vpn"></span></div>
+      <div class="row"><span class="k" data-i18n="k_proxy"></span><span class="v skeleton" id="sec-proxy"></span></div>
+      <div class="row"><span class="k" data-i18n="k_tor"></span><span class="v skeleton" id="sec-tor"></span></div>
+      <div class="row"><span class="k" data-i18n="k_dc"></span><span class="v skeleton" id="sec-dc"></span></div>
+      <div class="row"><span class="k" data-i18n="k_mobile_op"></span><span class="v skeleton" id="sec-mobile"></span></div>
+      <div class="row"><span class="k" data-i18n="k_satellite"></span><span class="v skeleton" id="sec-sat"></span></div>
+      <div class="row"><span class="k" data-i18n="k_blacklist"></span><span class="v skeleton" id="sec-abuser"></span></div>
+      <div class="row"><span class="k" data-i18n="k_abuse_score"></span><span class="v skeleton" id="sec-score"></span></div>
+    </section>
+
+    <section class="card">
+      <h2><span class="ico" aria-hidden="true">📍</span><span data-i18n="card_geo"></span></h2>
+      <div class="map" id="map-wrap"><div class="placeholder" data-i18n="map_placeholder"></div></div>
+      <div class="row"><span class="k" data-i18n="k_country"></span><span class="v skeleton big" id="geo-country"></span></div>
+      <div class="row"><span class="k" data-i18n="k_region"></span><span class="v skeleton" id="geo-region"></span></div>
+      <div class="row"><span class="k" data-i18n="k_city"></span><span class="v skeleton" id="geo-city"></span></div>
+      <div class="row"><span class="k" data-i18n="k_postal"></span><span class="v skeleton" id="geo-postal"></span></div>
+      <div class="row"><span class="k" data-i18n="k_coords"></span><span class="v skeleton" id="geo-coords"></span></div>
+      <div class="row"><span class="k" data-i18n="k_continent"></span><span class="v skeleton" id="geo-continent"></span></div>
+      <div class="row"><span class="k" data-i18n="k_eu"></span><span class="v skeleton" id="geo-eu"></span></div>
+      <div class="row"><span class="k" data-i18n="k_calling"></span><span class="v skeleton" id="geo-calling"></span></div>
+      <div class="row"><span class="k" data-i18n="k_currency"></span><span class="v skeleton" id="geo-currency"></span></div>
+      <div class="row"><span class="k" data-i18n="k_sources"></span><span class="v skeleton" id="geo-sources"></span></div>
+    </section>
+
+    <section class="card">
+      <h2><span class="ico" aria-hidden="true">🗺</span><span data-i18n="card_rg"></span></h2>
+      <div class="row"><span class="k" data-i18n="k_address"></span><span class="v skeleton" id="rg-address"></span></div>
+      <div class="row"><span class="k" data-i18n="k_road"></span><span class="v skeleton" id="rg-road"></span></div>
+      <div class="row"><span class="k" data-i18n="k_suburb"></span><span class="v skeleton" id="rg-suburb"></span></div>
+      <div class="row"><span class="k" data-i18n="k_locality"></span><span class="v skeleton" id="rg-city"></span></div>
+      <div class="row"><span class="k" data-i18n="k_state"></span><span class="v skeleton" id="rg-state"></span></div>
+      <div class="row"><span class="k" data-i18n="k_postcode"></span><span class="v skeleton" id="rg-postcode"></span></div>
+      <div class="row"><span class="k" data-i18n="k_country"></span><span class="v skeleton" id="rg-country"></span></div>
+      <div class="row"><span class="k" data-i18n="k_service"></span><span class="v skeleton" id="rg-source"></span></div>
+      <div class="note" data-i18n="note_rg"></div>
+    </section>
+
+    <section class="card" id="card-gps">
+      <h2><span class="ico" aria-hidden="true">🎯</span><span data-i18n="card_gps"></span></h2>
+      <div class="actions">
+        <button id="btn-geo" class="primary"><span aria-hidden="true">📡</span><span data-i18n="btn_gps"></span></button>
+      </div>
+      <div class="row"><span class="k" data-i18n="k_status"></span><span class="v muted" id="gps-status"></span></div>
+      <div class="row"><span class="k" data-i18n="k_coords"></span><span class="v muted" id="gps-coords">—</span></div>
+      <div class="row"><span class="k" data-i18n="k_accuracy"></span><span class="v muted" id="gps-accuracy">—</span></div>
+      <div class="row"><span class="k" data-i18n="k_altitude"></span><span class="v muted" id="gps-altitude">—</span></div>
+      <div class="row"><span class="k" data-i18n="k_speed"></span><span class="v muted" id="gps-speed">—</span></div>
+      <div class="row"><span class="k" data-i18n="k_gps_address"></span><span class="v muted" id="gps-address">—</span></div>
+      <div class="row"><span class="k" data-i18n="k_delta"></span><span class="v muted" id="gps-delta">—</span></div>
+      <div class="note" data-i18n="note_gps"></div>
+    </section>
+
+    <section class="card">
+      <h2><span class="ico" aria-hidden="true">🕐</span><span data-i18n="card_time"></span></h2>
+      <div class="row"><span class="k" data-i18n="k_tz_ip"></span><span class="v skeleton" id="tz-ip"></span></div>
+      <div class="row"><span class="k" data-i18n="k_tz_browser"></span><span class="v skeleton" id="tz-browser"></span></div>
+      <div class="row"><span class="k" data-i18n="k_tz_match"></span><span class="v skeleton" id="tz-match"></span></div>
+      <div class="row"><span class="k" data-i18n="k_tz_offset"></span><span class="v skeleton" id="tz-offset"></span></div>
+      <div class="row"><span class="k" data-i18n="k_time_local"></span><span class="v skeleton" id="tz-local"></span></div>
+      <div class="row"><span class="k" data-i18n="k_time_remote"></span><span class="v skeleton" id="tz-remote"></span></div>
+      <div class="row"><span class="k" data-i18n="k_time_utc"></span><span class="v skeleton" id="tz-utc"></span></div>
+      <div class="row"><span class="k" data-i18n="k_locale"></span><span class="v skeleton" id="tz-locale"></span></div>
+    </section>
+
+    <section class="card client-only">
+      <h2><span class="ico" aria-hidden="true">🧭</span><span data-i18n="card_browser"></span></h2>
+      <div class="row"><span class="k" data-i18n="k_browser"></span><span class="v skeleton big" id="br-name"></span></div>
+      <div class="row"><span class="k" data-i18n="k_engine"></span><span class="v skeleton" id="br-engine"></span></div>
+      <div class="row"><span class="k" data-i18n="k_languages"></span><span class="v skeleton" id="br-languages"></span></div>
+      <div class="row"><span class="k" data-i18n="k_cookies"></span><span class="v skeleton" id="br-cookies"></span></div>
+      <div class="row"><span class="k" data-i18n="k_dnt"></span><span class="v skeleton" id="br-dnt"></span></div>
+      <div class="row"><span class="k" data-i18n="k_gpc"></span><span class="v skeleton" id="br-gpc"></span></div>
+      <div class="row"><span class="k" data-i18n="k_adblock"></span><span class="v skeleton" id="br-adblock"></span></div>
+      <div class="row"><span class="k" data-i18n="k_plugins"></span><span class="v skeleton" id="br-plugins"></span></div>
+      <div class="row"><span class="k" data-i18n="k_js_engine"></span><span class="v skeleton" id="br-js"></span></div>
+      <div class="row"><span class="k" data-i18n="k_secure"></span><span class="v skeleton" id="br-secure"></span></div>
+      <div class="note" data-i18n="label_ua"></div>
+      <pre class="raw" id="br-ua">…</pre>
+    </section>
+
+    <section class="card client-only">
+      <h2><span class="ico" aria-hidden="true">💻</span><span data-i18n="card_os"></span></h2>
+      <div class="row"><span class="k" data-i18n="k_os"></span><span class="v skeleton big" id="os-name"></span></div>
+      <div class="row"><span class="k" data-i18n="k_os_version"></span><span class="v skeleton" id="os-version"></span></div>
+      <div class="row"><span class="k" data-i18n="k_arch"></span><span class="v skeleton" id="os-arch"></span></div>
+      <div class="row"><span class="k" data-i18n="k_model"></span><span class="v skeleton" id="os-model"></span></div>
+      <div class="row"><span class="k" data-i18n="k_device"></span><span class="v skeleton" id="os-mobile"></span></div>
+      <div class="row"><span class="k" data-i18n="k_cores"></span><span class="v skeleton" id="hw-cores"></span></div>
+      <div class="row"><span class="k" data-i18n="k_memory"></span><span class="v skeleton" id="hw-memory"></span></div>
+      <div class="row"><span class="k" data-i18n="k_touch"></span><span class="v skeleton" id="hw-touch"></span></div>
+      <div class="row"><span class="k" data-i18n="k_battery"></span><span class="v skeleton" id="hw-battery"></span></div>
+      <div class="row"><span class="k" data-i18n="k_storage"></span><span class="v skeleton" id="hw-storage"></span></div>
+    </section>
+
+    <section class="card client-only">
+      <h2><span class="ico" aria-hidden="true">🖥</span><span data-i18n="card_screen"></span></h2>
+      <div class="row"><span class="k" data-i18n="k_resolution"></span><span class="v skeleton" id="sc-res"></span></div>
+      <div class="row"><span class="k" data-i18n="k_avail"></span><span class="v skeleton" id="sc-avail"></span></div>
+      <div class="row"><span class="k" data-i18n="k_window"></span><span class="v skeleton" id="sc-viewport"></span></div>
+      <div class="row"><span class="k" data-i18n="k_dpr"></span><span class="v skeleton" id="sc-dpr"></span></div>
+      <div class="row"><span class="k" data-i18n="k_depth"></span><span class="v skeleton" id="sc-depth"></span></div>
+      <div class="row"><span class="k" data-i18n="k_gamut"></span><span class="v skeleton" id="sc-gamut"></span></div>
+      <div class="row"><span class="k" data-i18n="k_dynamic_range"></span><span class="v skeleton" id="sc-hdr"></span></div>
+      <div class="row"><span class="k" data-i18n="k_orientation"></span><span class="v skeleton" id="sc-orient"></span></div>
+      <div class="row"><span class="k" data-i18n="k_theme"></span><span class="v skeleton" id="sc-scheme"></span></div>
+      <div class="row"><span class="k" data-i18n="k_reduced_motion"></span><span class="v skeleton" id="sc-motion"></span></div>
+    </section>
+
+    <section class="card client-only">
+      <h2><span class="ico" aria-hidden="true">🎮</span><span data-i18n="card_graphics"></span></h2>
+      <div class="row"><span class="k" data-i18n="k_gpu"></span><span class="v skeleton" id="gl-renderer"></span></div>
+      <div class="row"><span class="k" data-i18n="k_gpu_vendor"></span><span class="v skeleton" id="gl-vendor"></span></div>
+      <div class="row"><span class="k" data-i18n="k_webgl"></span><span class="v skeleton" id="gl-version"></span></div>
+      <div class="row"><span class="k" data-i18n="k_webgl_ext"></span><span class="v skeleton" id="gl-ext"></span></div>
+      <div class="row"><span class="k" data-i18n="k_webgpu"></span><span class="v skeleton" id="gl-webgpu"></span></div>
+      <div class="row"><span class="k" data-i18n="k_canvas_fp"></span><span class="v skeleton" id="fp-canvas"></span></div>
+      <div class="row"><span class="k" data-i18n="k_audio_fp"></span><span class="v skeleton" id="fp-audio"></span></div>
+      <div class="row"><span class="k" data-i18n="k_total_fp"></span><span class="v skeleton" id="fp-total"></span></div>
+      <div class="note" data-i18n="note_fp"></div>
+    </section>
+
+    <section class="card client-only">
+      <h2><span class="ico" aria-hidden="true">📶</span><span data-i18n="card_conn"></span></h2>
+      <div class="row"><span class="k" data-i18n="k_conn_type"></span><span class="v skeleton" id="con-type"></span></div>
+      <div class="row"><span class="k" data-i18n="k_conn_eff"></span><span class="v skeleton" id="con-eff"></span></div>
+      <div class="row"><span class="k" data-i18n="k_downlink"></span><span class="v skeleton" id="con-downlink"></span></div>
+      <div class="row"><span class="k" data-i18n="k_rtt"></span><span class="v skeleton" id="con-rtt"></span></div>
+      <div class="row"><span class="k" data-i18n="k_save_data"></span><span class="v skeleton" id="con-save"></span></div>
+      <div class="row"><span class="k" data-i18n="k_online"></span><span class="v skeleton" id="con-online"></span></div>
+      <div class="row"><span class="k" data-i18n="k_api_latency"></span><span class="v skeleton" id="con-latency"></span></div>
+    </section>
+
+    <section class="card client-only">
+      <h2><span class="ico" aria-hidden="true">📡</span><span data-i18n="card_webrtc"></span></h2>
+      <div class="row"><span class="k" data-i18n="k_rtc_public"></span><span class="v skeleton" id="rtc-public"></span></div>
+      <div class="row"><span class="k" data-i18n="k_rtc_match"></span><span class="v skeleton" id="rtc-match"></span></div>
+      <div class="row"><span class="k" data-i18n="k_rtc_local"></span><span class="v skeleton" id="rtc-local"></span></div>
+      <div class="note" data-i18n="note_rtc"></div>
+    </section>
+
+    <section class="card client-only">
+      <h2><span class="ico" aria-hidden="true">🔐</span><span data-i18n="card_perms"></span></h2>
+      <div class="row"><span class="k" data-i18n="k_perm_geo"></span><span class="v skeleton" id="pm-geolocation"></span></div>
+      <div class="row"><span class="k" data-i18n="k_perm_notif"></span><span class="v skeleton" id="pm-notifications"></span></div>
+      <div class="row"><span class="k" data-i18n="k_perm_cam"></span><span class="v skeleton" id="pm-camera"></span></div>
+      <div class="row"><span class="k" data-i18n="k_perm_mic"></span><span class="v skeleton" id="pm-microphone"></span></div>
+      <div class="row"><span class="k" data-i18n="k_mics"></span><span class="v skeleton" id="md-audioin"></span></div>
+      <div class="row"><span class="k" data-i18n="k_speakers"></span><span class="v skeleton" id="md-audioout"></span></div>
+      <div class="row"><span class="k" data-i18n="k_cams"></span><span class="v skeleton" id="md-videoin"></span></div>
+    </section>
+
+    <section class="card client-only">
+      <h2><span class="ico" aria-hidden="true">🔤</span><span data-i18n="card_fonts"></span></h2>
+      <div class="row"><span class="k" data-i18n="k_fonts_found"></span><span class="v skeleton" id="fonts-count"></span></div>
+      <div class="list" id="fonts-list">…</div>
+    </section>
+
+    <section class="card wide">
+      <h2><span class="ico" aria-hidden="true">📨</span><span data-i18n="card_headers"></span></h2>
+      <pre class="raw" id="headers">…</pre>
+    </section>
+
+    <section class="card wide">
+      <h2><span class="ico" aria-hidden="true">🧾</span><span data-i18n="card_raw"></span></h2>
+      <pre class="raw" id="raw-json">…</pre>
+    </section>
+
+  </main>
+
+  <footer>
+    <p id="api-hint"></p>
+    <p><span data-i18n="footer1"></span><br><span data-i18n="footer2"></span><br><span data-i18n="footer3"></span></p>
+  </footer>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="/static/i18n.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>
