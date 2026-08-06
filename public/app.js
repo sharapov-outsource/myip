@@ -971,13 +971,31 @@ function renderRaw() {
  * Applying a language
  * ================================================================== */
 
+/** Keeps title, meta description and social preview tags in the page's language. */
+function updateSeoMeta() {
+  const title = t('title');
+  const description = t('subtitle');
+  const ogLocale = locale().replace('-', '_');
+  const url = location.origin + location.pathname;
+
+  document.title = title;
+  byId('meta-description')?.setAttribute('content', description);
+  byId('og-title')?.setAttribute('content', title);
+  byId('og-description')?.setAttribute('content', description);
+  byId('og-locale')?.setAttribute('content', ogLocale);
+  byId('og-url')?.setAttribute('content', url);
+  byId('twitter-title')?.setAttribute('content', title);
+  byId('twitter-description')?.setAttribute('content', description);
+  byId('link-canonical')?.setAttribute('href', url);
+}
+
 function applyLanguage(lang, { refetchGeocode = true } = {}) {
   LANG = lang;
   try { localStorage.setItem(STORAGE_KEY, lang); } catch { /* private browsing */ }
 
   document.documentElement.lang = lang;
   document.documentElement.dir = RTL.has(lang) ? 'rtl' : 'ltr';
-  document.title = t('title');
+  updateSeoMeta();
 
   document.querySelectorAll('[data-i18n]').forEach(node => {
     node.textContent = t(node.dataset.i18n);
