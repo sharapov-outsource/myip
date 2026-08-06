@@ -58,8 +58,8 @@ button,select{
 }
 button:hover,select:hover{border-color:var(--accent);color:var(--accent)}
 button:active{transform:translateY(1px)}
-button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:#06121f;font-weight:600}
-button.primary:hover{opacity:.9;color:#06121f}
+button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:#fff;font-weight:600}
+button.primary:hover{opacity:.9;color:#fff}
 button:disabled{opacity:.5;cursor:default;transform:none}
 select{appearance:none;padding-inline-end:26px;
   background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);
