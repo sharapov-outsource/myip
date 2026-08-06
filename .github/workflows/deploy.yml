@@ -77,7 +77,7 @@ jobs:
     environment: Prod
     env:
       CONTAINER: myip
-      PORT: 3021
+      PORT: 3023
       ENV_DIR: /opt/myip
     steps:
       - name: Validate deploy config
