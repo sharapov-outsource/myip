@@ -15,6 +15,7 @@
  */
 
 import path from 'node:path';
+import vm from 'node:vm';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
@@ -41,7 +42,22 @@ const TRUST_PROXY = process.env.TRUST_PROXY !== 'false';
 const MAX_INFLIGHT = Number(process.env.MAX_INFLIGHT || 24);
 let inflight = 0;
 
-const SUPPORTED_LANGS = ['en', 'ru', 'es', 'zh', 'hi', 'ar', 'pt', 'fr', 'de', 'ja', 'tr', 'uk'];
+/* Canonical origin used in <link rel=canonical>, og:url and the sitemap. Pin it
+   in production: without it the value is derived from the Host header, which a
+   client controls. */
+const PUBLIC_ORIGIN = (process.env.PUBLIC_ORIGIN || '').replace(/\/+$/, '');
+
+/* The translation dictionaries are the single source of truth for the language
+   list, so adding a language only means editing i18n.js. They also give the
+   server localized titles for crawlers and social scrapers, which never run JS. */
+const i18nSandbox = { window: {} };
+vm.createContext(i18nSandbox);
+vm.runInContext(readFileSync(path.join(PUBLIC_DIR, 'i18n.js'), 'utf8'), i18nSandbox);
+
+const I18N = i18nSandbox.window.I18N;
+const LANG_LOCALES = i18nSandbox.window.LANG_LOCALES || {};
+const RTL_LANGS = new Set(i18nSandbox.window.RTL_LANGS || []);
+const SUPPORTED_LANGS = Object.keys(I18N);
 
 const app = Fastify({
   logger: {
@@ -119,15 +135,23 @@ function wantedFormat(req) {
  * Security headers
  * ------------------------------------------------------------------ */
 
+/* Yandex.Metrika loads its tag, beacons and Webvisor from these hosts. Inline
+   scripts stay forbidden — the counter is served from /static/metrika.js. */
+const METRIKA = 'https://mc.yandex.ru https://mc.yandex.com https://yastatic.net';
+/* Webvisor streams over a WebSocket, and CSP matches the scheme, so the wss://
+   origins have to be listed separately from the https:// ones. */
+const METRIKA_WS = 'wss://mc.yandex.ru wss://mc.yandex.com';
+
 const CSP = [
   "default-src 'self'",
-  "script-src 'self'",
-  "style-src 'self'",
-  "img-src 'self' data:",
+  `script-src 'self' ${METRIKA}`,
+  // Metrika injects its own styles for Webvisor.
+  "style-src 'self' 'unsafe-inline'",
+  `img-src 'self' data: ${METRIKA}`,
   "font-src 'self'",
-  "connect-src 'self'",
-  // Embedded OpenStreetMap widget.
-  'frame-src https://www.openstreetmap.org',
+  `connect-src 'self' ${METRIKA} ${METRIKA_WS}`,
+  // Embedded OpenStreetMap widget, plus the frame Metrika uses to sync.
+  `frame-src https://www.openstreetmap.org ${METRIKA}`,
   "base-uri 'none'",
   "form-action 'none'",
   "frame-ancestors 'none'",
@@ -197,15 +221,55 @@ await app.register(fastifyStatic, {
   maxAge: '1h',
   immutable: false,
   dotfiles: 'deny',
+  // index.html is a template rendered per request, never served raw.
+  allowedPath: pathName => pathName !== '/index.html',
 });
 
-const INDEX_HTML = readFileSync(path.join(PUBLIC_DIR, 'index.html'), 'utf8');
+const INDEX_TEMPLATE = readFileSync(path.join(PUBLIC_DIR, 'index.html'), 'utf8');
 
-function sendHtml(reply) {
+/** Escapes a value for use inside a double-quoted HTML attribute. */
+function attr(value) {
+  return String(value ?? '').replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+/** Absolute origin of the current request, honouring the reverse proxy. */
+function originOf(req) {
+  if (PUBLIC_ORIGIN) return PUBLIC_ORIGIN;
+  const proto = TRUST_PROXY ? (req.headers['x-forwarded-proto'] || req.protocol) : req.protocol;
+  const host = req.headers.host || `localhost:${PORT}`;
+  return `${String(proto).split(',')[0].trim()}://${host}`;
+}
+
+/**
+ * Fills the head of the page before sending it.
+ *
+ * Social scrapers and simpler crawlers never execute JavaScript, so the title,
+ * description, canonical URL and og:* tags have to be correct in the markup
+ * itself. The client refines them again once it picks the display language.
+ */
+function renderHtml(req) {
+  const lang = pickLang(req);
+  const dict = I18N[lang] || I18N.en;
+  const origin = originOf(req);
+  const url = origin + req.raw.url.split('?')[0];
+
+  return INDEX_TEMPLATE
+    .replaceAll('{{LANG}}', attr(lang))
+    .replaceAll('{{DIR}}', RTL_LANGS.has(lang) ? 'rtl' : 'ltr')
+    .replaceAll('{{TITLE}}', attr(dict.title))
+    .replaceAll('{{DESCRIPTION}}', attr(dict.subtitle))
+    .replaceAll('{{URL}}', attr(url))
+    .replaceAll('{{ORIGIN}}', attr(origin))
+    .replaceAll('{{OG_LOCALE}}', attr((LANG_LOCALES[lang] || lang).replace('-', '_')));
+}
+
+function sendHtml(req, reply) {
   return reply
     .type('text/html; charset=utf-8')
     .header('cache-control', 'public, max-age=300')
-    .send(INDEX_HTML);
+    .header('vary', 'Accept-Language')
+    .send(renderHtml(req));
 }
 
 /* ------------------------------------------------------------------ *
@@ -276,7 +340,10 @@ async function handle(req, reply, { rawIp, forceData = false }) {
   }
 
   // The page is served immediately; it fetches its data from /api on its own.
-  if (format === 'html') return sendHtml(reply);
+  // Individual address pages are excluded from the index; only the root is a
+  // landing page worth ranking.
+  if (rawIp !== null && rawIp !== undefined) reply.header('x-robots-tag', 'noindex, follow');
+  if (format === 'html') return sendHtml(req, reply);
 
   if (inflight >= MAX_INFLIGHT) {
     return reply.code(503).header('retry-after', '5').send({
@@ -324,17 +391,55 @@ app.get('/healthz', { config: { rateLimit: false } }, async () => ({
   inflight,
 }));
 
+/* Icons and the manifest live in public/ but browsers and crawlers probe them at
+   the site root, so they get their own routes there. */
+const ROOT_ASSETS = {
+  '/favicon.ico': ['favicon.ico', 'image/x-icon'],
+  '/favicon.svg': ['favicon.svg', 'image/svg+xml'],
+  '/apple-touch-icon.png': ['apple-touch-icon.png', 'image/png'],
+  // iOS asks for this variant too, and 404s in the log are just noise.
+  '/apple-touch-icon-precomposed.png': ['apple-touch-icon.png', 'image/png'],
+  '/site.webmanifest': ['site.webmanifest', 'application/manifest+json'],
+};
+
+for (const [route, [file, type]] of Object.entries(ROOT_ASSETS)) {
+  const body = readFileSync(path.join(PUBLIC_DIR, file));
+  app.get(route, { config: { rateLimit: false } }, async (req, reply) =>
+    reply.type(type).header('cache-control', 'public, max-age=86400').send(body)
+  );
+}
+
 app.get('/robots.txt', { config: { rateLimit: false } }, async (req, reply) =>
   reply.type('text/plain; charset=utf-8').send(
-    // Crawlers are allowed on the home page only: walking arbitrary addresses
-    // would put pointless load on the upstream services.
-    'User-agent: *\nAllow: /$\nDisallow: /api\nDisallow: /\n'
+    // Only the home page is worth crawling: walking arbitrary addresses would put
+    // pointless load on the upstream services. Assets stay allowed, otherwise the
+    // crawler cannot run the scripts that render the page and sees a blank body.
+    [
+      'User-agent: *',
+      'Allow: /$',
+      'Allow: /static/',
+      'Allow: /favicon.ico',
+      'Allow: /favicon.svg',
+      'Allow: /apple-touch-icon.png',
+      'Allow: /site.webmanifest',
+      'Disallow: /api',
+      'Disallow: /',
+      '',
+      `Sitemap: ${originOf(req)}/sitemap.xml`,
+      '',
+    ].join('\n')
   )
 );
 
-app.get('/favicon.ico', { config: { rateLimit: false } }, async (req, reply) =>
-  reply.code(204).send()
-);
+app.get('/sitemap.xml', { config: { rateLimit: false } }, async (req, reply) => {
+  const origin = originOf(req);
+  return reply.type('application/xml; charset=utf-8').send(
+    '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+    `  <url>\n    <loc>${attr(origin)}/</loc>\n    <changefreq>weekly</changefreq>\n` +
+    '    <priority>1.0</priority>\n  </url>\n</urlset>\n'
+  );
+});
 
 /** Request headers as the server sees them — replaces third-party echo services. */
 app.get('/api/headers', async (req, reply) => {

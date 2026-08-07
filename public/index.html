@@ -1,37 +1,66 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<!--
+  Mustache placeholders in the head are filled by the server before the page is
+  sent, so crawlers and social scrapers — which do not run JavaScript — get the
+  correct title, description and URLs. The client refines them on language change.
+-->
+<html lang="{{LANG}}" dir="{{DIR}}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark light">
-  <meta name="description" content="External address, ISP, geolocation, geocoding and browser fingerprint" id="meta-description">
-  <meta name="robots" content="index, follow">
-  <title>My IP — everything visible about your connection</title>
-  <link rel="canonical" href="/" id="link-canonical">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="My IP">
-  <meta property="og:url" content="/" id="og-url">
-  <meta property="og:locale" content="en_GB" id="og-locale">
-  <meta property="og:title" content="My IP — everything visible about your connection" id="og-title">
-  <meta property="og:description" content="External address, ISP, geolocation, geocoding and browser fingerprint" id="og-description">
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="My IP — everything visible about your connection" id="twitter-title">
-  <meta name="twitter:description" content="External address, ISP, geolocation, geocoding and browser fingerprint" id="twitter-description">
-  <link rel="stylesheet" href="/static/styles.css">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9B%B0%3C/text%3E%3C/svg%3E">
-  <!-- Yandex.Metrika counter -->
-  <script type="text/javascript">
-    (function(m,e,t,r,i,k,a){
-      m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-      m[i].l=1*new Date();
-      for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-      k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-    })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=111343939', 'ym');
+  <meta name="theme-color" content="#0a0e16" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f4f6fb" media="(prefers-color-scheme: light)">
+  <!-- Stops iOS from turning IP addresses into telephone links. -->
+  <meta name="format-detection" content="telephone=no">
 
-    ym(111343939, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+  <title>{{TITLE}}</title>
+  <meta name="description" content="{{DESCRIPTION}}" id="meta-description">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="canonical" href="{{URL}}" id="link-canonical">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="myip">
+  <meta property="og:url" content="{{URL}}" id="og-url">
+  <meta property="og:locale" content="{{OG_LOCALE}}" id="og-locale">
+  <meta property="og:title" content="{{TITLE}}" id="og-title">
+  <meta property="og:description" content="{{DESCRIPTION}}" id="og-description">
+  <meta property="og:image" content="{{ORIGIN}}/static/og-image.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="myip.sharapov.biz">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{TITLE}}" id="twitter-title">
+  <meta name="twitter:description" content="{{DESCRIPTION}}" id="twitter-description">
+  <meta name="twitter:image" content="{{ORIGIN}}/static/og-image.png">
+
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="apple-mobile-web-app-title" content="myip">
+
+  <link rel="stylesheet" href="/static/styles.css">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "myip",
+    "url": "{{ORIGIN}}/",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "browserRequirements": "Requires JavaScript",
+    "description": "{{DESCRIPTION}}",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "author": { "@type": "Organization", "name": "Sharapov", "url": "https://sharapov.biz" }
+  }
   </script>
-  <noscript><div><img src="https://mc.yandex.ru/watch/111343939" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-  <!-- /Yandex.Metrika counter -->
+
+  <script src="/static/metrika.js" defer></script>
+  <noscript><div><img src="https://mc.yandex.ru/watch/111343939" style="position:absolute; left:-9999px;" alt=""></div></noscript>
 </head>
 <body>
 <div class="wrap">

@@ -83,6 +83,40 @@ async function run() {
   check('html: links app.js', html.includes('/static/app.js'));
   check('html: links i18n.js', html.includes('/static/i18n.js'));
 
+  // SEO head is rendered server side, for clients that do not run JavaScript.
+  check('seo: no unfilled placeholders', !html.includes('{{'), html.match(/\{\{\w+\}\}/)?.[0]);
+  check('seo: absolute canonical', /<link rel="canonical" href="http[^"]+\/8\.8\.8\.8"/.test(html));
+  check('seo: absolute og:url', /property="og:url" content="http[^"]+"/.test(html));
+  check('seo: og:image', /property="og:image" content="http[^"]+\/static\/og-image\.png"/.test(html));
+  check('seo: structured data', html.includes('application/ld+json'));
+  check('seo: address page is noindex', (page.headers.get('x-robots-tag') || '').includes('noindex'));
+
+  const ru = await fetch(`${base}/`, {
+    headers: { accept: 'text/html', 'user-agent': 'Mozilla/5.0', 'accept-language': 'ru-RU,ru;q=0.9' },
+  });
+  const ruHtml = await ru.text();
+  check('seo: head follows Accept-Language', ruHtml.includes('<html lang="ru"'));
+  check('seo: localized title', /<title>Мой IP/.test(ruHtml));
+
+  // Icons, manifest and crawler files.
+  for (const [route, type] of [
+    ['/favicon.ico', 'image'], ['/favicon.svg', 'image/svg+xml'],
+    ['/apple-touch-icon.png', 'image/png'], ['/site.webmanifest', 'manifest'],
+    ['/sitemap.xml', 'xml'], ['/robots.txt', 'text/plain'],
+  ]) {
+    const res = await fetch(`${base}${route}`);
+    check(`asset ${route}`, res.ok && (res.headers.get('content-type') || '').includes(type),
+      `status ${res.status}, type ${res.headers.get('content-type')}`);
+  }
+
+  const robots = await (await fetch(`${base}/robots.txt`)).text();
+  // Blocking the assets would leave a crawler with an empty, unrendered page.
+  check('robots: assets crawlable', robots.includes('Allow: /static/'));
+  check('robots: sitemap advertised', /^Sitemap: http/m.test(robots));
+
+  // The template itself must never be reachable with its placeholders intact.
+  check('raw template not served', (await fetch(`${base}/static/index.html`)).status === 404);
+
   // curl without an Accept header gets data, not the page.
   const cli = await fetch(`${base}/`, { headers: { 'user-agent': 'curl/8.7.1' } });
   check('curl -> json', (cli.headers.get('content-type') || '').includes('json'));

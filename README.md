@@ -81,9 +81,10 @@ names are localized through `Intl.DisplayNames`, dates and times through
 language.
 
 To add a language: copy the `en` object in [i18n.js](public/i18n.js), translate the
-values, register the code in `LANG_NAMES` and `LANG_LOCALES` (and in `RTL_LANGS` for
-right-to-left scripts), then add the code to `SUPPORTED_LANGS` in
-[server/index.js](server/index.js). `npm run check:i18n` verifies nothing was missed.
+values and register the code in `LANG_NAMES` and `LANG_LOCALES` (and in `RTL_LANGS`
+for right-to-left scripts). That file is the single source of truth — the server
+reads it too, so nothing else needs editing. `npm run check:i18n` verifies nothing
+was missed.
 
 ## Running
 
@@ -112,6 +113,7 @@ No upstream services are involved, so the test works offline.
 | `HOSTNAME` | `0.0.0.0` | Interface |
 | `TRUST_PROXY` | `true` | Read the client IP from `CF-Connecting-IP` / `X-Real-IP` / `X-Forwarded-For` |
 | `HSTS` | `false` | Send `Strict-Transport-Security` |
+| `PUBLIC_ORIGIN` | derived from `Host` | Canonical origin for `canonical`, `og:url` and the sitemap |
 | `RATE_MAX` | `120` | Overall requests per minute per address |
 | `RATE_LOOKUP_MAX` | `30` | Limit on address lookups |
 | `RATE_GEOCODE_MAX` | `12` | Limit on geocoding |
@@ -124,6 +126,28 @@ No upstream services are involved, so the test works offline.
 **Enable `TRUST_PROXY` only behind a reverse proxy.** If the server faces the internet
 directly, a client can forge the header and bypass the limits — set `TRUST_PROXY=false`
 in that case.
+
+## SEO and social previews
+
+The head is rendered on the server: title, description, `canonical` and the `og:`
+tags are already correct in the markup, because social scrapers and simpler crawlers
+do not execute JavaScript. Language comes from `Accept-Language`, and the response
+carries `Vary: Accept-Language`. Once the page loads, the client updates the same
+tags whenever the visitor switches language.
+
+`robots.txt` allows the home page and `/static/`, and disallows `/api` and individual
+address pages. Leaving the assets crawlable matters: the page is rendered entirely by
+its scripts, so a crawler blocked from them would index an empty body. Address pages
+also carry `X-Robots-Tag: noindex, follow`.
+
+Set `PUBLIC_ORIGIN` in production. Without it the canonical URL is built from the
+`Host` header, which a client controls.
+
+Icons are generated from [favicon.svg](public/favicon.svg):
+
+```bash
+rsvg-convert -w 512 -h 512 public/favicon.svg -o public/icon-512.png
+```
 
 ## Load protection
 
@@ -331,9 +355,9 @@ curl -s "https://myip.sharapov.biz/1.1.1.1?output=yaml&lang=ru"
 `Intl.DateTimeFormat`, адрес запрашивается у геокодера на выбранном языке.
 
 Чтобы добавить язык: скопируйте объект `en` в [i18n.js](public/i18n.js), переведите
-значения, впишите код в `LANG_NAMES` и `LANG_LOCALES` (и в `RTL_LANGS`, если письмо
-справа налево), добавьте код в `SUPPORTED_LANGS` в [server/index.js](server/index.js).
-`npm run check:i18n` проверит, что ничего не забыто.
+значения и впишите код в `LANG_NAMES` и `LANG_LOCALES` (и в `RTL_LANGS`, если письмо
+справа налево). Этот файл — единственный источник правды, сервер читает его же, так
+что больше нигде править не нужно. `npm run check:i18n` проверит, что ничего не забыто.
 
 ### Запуск
 
@@ -362,6 +386,7 @@ npm test
 | `HOSTNAME` | `0.0.0.0` | Интерфейс |
 | `TRUST_PROXY` | `true` | Читать IP клиента из `CF-Connecting-IP` / `X-Real-IP` / `X-Forwarded-For` |
 | `HSTS` | `false` | Отдавать `Strict-Transport-Security` |
+| `PUBLIC_ORIGIN` | из заголовка `Host` | Канонический origin для `canonical`, `og:url` и sitemap |
 | `RATE_MAX` | `120` | Общий лимит запросов в минуту на адрес |
 | `RATE_LOOKUP_MAX` | `30` | Лимит на просмотры адресов |
 | `RATE_GEOCODE_MAX` | `12` | Лимит на геокодинг |
@@ -374,6 +399,27 @@ npm test
 **`TRUST_PROXY` включайте только за обратным прокси.** Если сервер смотрит в
 интернет напрямую, клиент подделает заголовок и обойдёт лимиты — тогда ставьте
 `TRUST_PROXY=false`.
+
+### SEO и превью ссылок
+
+Head формируется на сервере: заголовок, описание, `canonical` и `og:`-теги уже
+корректны в разметке, потому что соцсети и часть краулеров не исполняют JavaScript.
+Язык берётся из `Accept-Language`, ответ отдаётся с `Vary: Accept-Language`. После
+загрузки клиент обновляет те же теги при переключении языка.
+
+`robots.txt` разрешает главную и `/static/`, запрещает `/api` и страницы отдельных
+адресов. Оставить ассеты открытыми принципиально: страница целиком рисуется
+скриптами, и краулер без доступа к ним проиндексировал бы пустое тело. На страницах
+адресов дополнительно стоит `X-Robots-Tag: noindex, follow`.
+
+В продакшене задавайте `PUBLIC_ORIGIN`. Без него канонический адрес собирается из
+заголовка `Host`, а его контролирует клиент.
+
+Иконки генерируются из [favicon.svg](public/favicon.svg):
+
+```bash
+rsvg-convert -w 512 -h 512 public/favicon.svg -o public/icon-512.png
+```
 
 ### Защита от нагрузки
 
