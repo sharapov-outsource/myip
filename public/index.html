@@ -9,8 +9,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark light">
-  <meta name="theme-color" content="#0a0e16" media="(prefers-color-scheme: dark)">
-  <meta name="theme-color" content="#f4f6fb" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#14110c" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f9f4ea" media="(prefers-color-scheme: light)">
   <!-- Stops iOS from turning IP addresses into telephone links. -->
   <meta name="format-detection" content="telephone=no">
 
@@ -42,6 +42,8 @@
   <link rel="manifest" href="/site.webmanifest">
   <meta name="apple-mobile-web-app-title" content="myip">
 
+  <link rel="preload" href="/static/fonts/inter-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/static/fonts.css">
   <link rel="stylesheet" href="/static/styles.css">
 
   <script type="application/ld+json">
@@ -67,7 +69,12 @@
 
   <header>
     <div class="brand">
-      <div class="logo">🛰</div>
+      <span class="logo" aria-hidden="true">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="32" cy="32" r="20.5" fill="none" stroke="currentColor" stroke-width="6" opacity=".22"/>
+          <circle cx="32" cy="32" r="11" fill="currentColor"/>
+        </svg>
+      </span>
       <div>
         <h1 data-i18n="h1">My IP</h1>
         <div class="sub" data-i18n="subtitle"></div>
@@ -89,8 +96,8 @@
   <form class="search" id="search-form">
     <input id="search-ip" type="text" inputmode="text" spellcheck="false" autocomplete="off"
            placeholder="8.8.8.8 · 2001:4860:4860::8888" aria-label="IP">
-    <button type="submit" class="primary"><span aria-hidden="true">🔍</span><span data-i18n="btn_lookup"></span></button>
-    <button type="button" id="btn-mine"><span aria-hidden="true">📍</span><span data-i18n="btn_my_ip"></span></button>
+    <button type="submit" class="primary"><span data-i18n="btn_lookup"></span></button>
+    <button type="button" id="btn-mine"><span data-i18n="btn_my_ip"></span></button>
   </form>
 
   <section class="hero">
@@ -107,7 +114,7 @@
   <main class="grid">
 
     <section class="card">
-      <h2><span class="ico" aria-hidden="true">🌐</span><span data-i18n="card_ips"></span></h2>
+      <h2><span data-i18n="card_ips"></span></h2>
       <div class="row"><span class="k" data-i18n="k_ipv4"></span><span class="v skeleton" id="ipv4"></span></div>
       <div class="row"><span class="k" data-i18n="k_ipv6"></span><span class="v skeleton" id="ipv6"></span></div>
       <div class="row"><span class="k" data-i18n="k_proto"></span><span class="v skeleton" id="ip-type"></span></div>
@@ -118,7 +125,7 @@
     </section>
 
     <section class="card">
-      <h2><span class="ico" aria-hidden="true">🏢</span><span data-i18n="card_isp"></span></h2>
+      <h2><span data-i18n="card_isp"></span></h2>
       <div class="row"><span class="k" data-i18n="k_isp"></span><span class="v skeleton big" id="net-isp"></span></div>
       <div class="row"><span class="k" data-i18n="k_org"></span><span class="v skeleton" id="net-org"></span></div>
       <div class="row"><span class="k" data-i18n="k_asn"></span><span class="v skeleton" id="net-asn"></span></div>
@@ -130,7 +137,7 @@
     </section>
 
     <section class="card">
-      <h2><span class="ico" aria-hidden="true">📇</span><span data-i18n="card_rdap"></span></h2>
+      <h2><span data-i18n="card_rdap"></span></h2>
       <div class="row"><span class="k" data-i18n="k_rd_name"></span><span class="v skeleton" id="rd-name"></span></div>
       <div class="row"><span class="k" data-i18n="k_rd_range"></span><span class="v skeleton" id="rd-range"></span></div>
       <div class="row"><span class="k" data-i18n="k_rd_cidr"></span><span class="v skeleton" id="rd-cidr"></span></div>
@@ -145,7 +152,7 @@
     </section>
 
     <section class="card">
-      <h2><span class="ico" aria-hidden="true">🕵️</span><span data-i18n="card_anon"></span></h2>
+      <h2><span data-i18n="card_anon"></span></h2>
       <div class="row"><span class="k" data-i18n="k_vpn"></span><span class="v skeleton" id="sec-vpn"></span></div>
       <div class="row"><span class="k" data-i18n="k_proxy"></span><span class="v skeleton" id="sec-proxy"></span></div>
       <div class="row"><span class="k" data-i18n="k_tor"></span><span class="v skeleton" id="sec-tor"></span></div>
@@ -157,7 +164,7 @@
     </section>
 
     <section class="card">
-      <h2><span class="ico" aria-hidden="true">📍</span><span data-i18n="card_geo"></span></h2>
+      <h2><span data-i18n="card_geo"></span></h2>
       <div class="map" id="map-wrap"><div class="placeholder" data-i18n="map_placeholder"></div></div>
       <div class="row"><span class="k" data-i18n="k_country"></span><span class="v skeleton big" id="geo-country"></span></div>
       <div class="row"><span class="k" data-i18n="k_region"></span><span class="v skeleton" id="geo-region"></span></div>
@@ -172,7 +179,7 @@
     </section>
 
     <section class="card">
-      <h2><span class="ico" aria-hidden="true">🗺</span><span data-i18n="card_rg"></span></h2>
+      <h2><span data-i18n="card_rg"></span></h2>
       <div class="row"><span class="k" data-i18n="k_address"></span><span class="v skeleton" id="rg-address"></span></div>
       <div class="row"><span class="k" data-i18n="k_road"></span><span class="v skeleton" id="rg-road"></span></div>
       <div class="row"><span class="k" data-i18n="k_suburb"></span><span class="v skeleton" id="rg-suburb"></span></div>
@@ -185,9 +192,9 @@
     </section>
 
     <section class="card" id="card-gps">
-      <h2><span class="ico" aria-hidden="true">🎯</span><span data-i18n="card_gps"></span></h2>
+      <h2><span data-i18n="card_gps"></span></h2>
       <div class="actions">
-        <button id="btn-geo" class="primary"><span aria-hidden="true">📡</span><span data-i18n="btn_gps"></span></button>
+        <button id="btn-geo" class="primary"><span data-i18n="btn_gps"></span></button>
       </div>
       <div class="row"><span class="k" data-i18n="k_status"></span><span class="v muted" id="gps-status"></span></div>
       <div class="row"><span class="k" data-i18n="k_coords"></span><span class="v muted" id="gps-coords">—</span></div>
@@ -200,7 +207,7 @@
     </section>
 
     <section class="card">
-      <h2><span class="ico" aria-hidden="true">🕐</span><span data-i18n="card_time"></span></h2>
+      <h2><span data-i18n="card_time"></span></h2>
       <div class="row"><span class="k" data-i18n="k_tz_ip"></span><span class="v skeleton" id="tz-ip"></span></div>
       <div class="row"><span class="k" data-i18n="k_tz_browser"></span><span class="v skeleton" id="tz-browser"></span></div>
       <div class="row"><span class="k" data-i18n="k_tz_match"></span><span class="v skeleton" id="tz-match"></span></div>
@@ -212,7 +219,7 @@
     </section>
 
     <section class="card client-only">
-      <h2><span class="ico" aria-hidden="true">🧭</span><span data-i18n="card_browser"></span></h2>
+      <h2><span data-i18n="card_browser"></span></h2>
       <div class="row"><span class="k" data-i18n="k_browser"></span><span class="v skeleton big" id="br-name"></span></div>
       <div class="row"><span class="k" data-i18n="k_engine"></span><span class="v skeleton" id="br-engine"></span></div>
       <div class="row"><span class="k" data-i18n="k_languages"></span><span class="v skeleton" id="br-languages"></span></div>
@@ -228,7 +235,7 @@
     </section>
 
     <section class="card client-only">
-      <h2><span class="ico" aria-hidden="true">💻</span><span data-i18n="card_os"></span></h2>
+      <h2><span data-i18n="card_os"></span></h2>
       <div class="row"><span class="k" data-i18n="k_os"></span><span class="v skeleton big" id="os-name"></span></div>
       <div class="row"><span class="k" data-i18n="k_os_version"></span><span class="v skeleton" id="os-version"></span></div>
       <div class="row"><span class="k" data-i18n="k_arch"></span><span class="v skeleton" id="os-arch"></span></div>
@@ -242,7 +249,7 @@
     </section>
 
     <section class="card client-only">
-      <h2><span class="ico" aria-hidden="true">🖥</span><span data-i18n="card_screen"></span></h2>
+      <h2><span data-i18n="card_screen"></span></h2>
       <div class="row"><span class="k" data-i18n="k_resolution"></span><span class="v skeleton" id="sc-res"></span></div>
       <div class="row"><span class="k" data-i18n="k_avail"></span><span class="v skeleton" id="sc-avail"></span></div>
       <div class="row"><span class="k" data-i18n="k_window"></span><span class="v skeleton" id="sc-viewport"></span></div>
@@ -256,7 +263,7 @@
     </section>
 
     <section class="card client-only">
-      <h2><span class="ico" aria-hidden="true">🎮</span><span data-i18n="card_graphics"></span></h2>
+      <h2><span data-i18n="card_graphics"></span></h2>
       <div class="row"><span class="k" data-i18n="k_gpu"></span><span class="v skeleton" id="gl-renderer"></span></div>
       <div class="row"><span class="k" data-i18n="k_gpu_vendor"></span><span class="v skeleton" id="gl-vendor"></span></div>
       <div class="row"><span class="k" data-i18n="k_webgl"></span><span class="v skeleton" id="gl-version"></span></div>
@@ -269,7 +276,7 @@
     </section>
 
     <section class="card client-only">
-      <h2><span class="ico" aria-hidden="true">📶</span><span data-i18n="card_conn"></span></h2>
+      <h2><span data-i18n="card_conn"></span></h2>
       <div class="row"><span class="k" data-i18n="k_conn_type"></span><span class="v skeleton" id="con-type"></span></div>
       <div class="row"><span class="k" data-i18n="k_conn_eff"></span><span class="v skeleton" id="con-eff"></span></div>
       <div class="row"><span class="k" data-i18n="k_downlink"></span><span class="v skeleton" id="con-downlink"></span></div>
@@ -280,7 +287,7 @@
     </section>
 
     <section class="card client-only">
-      <h2><span class="ico" aria-hidden="true">📡</span><span data-i18n="card_webrtc"></span></h2>
+      <h2><span data-i18n="card_webrtc"></span></h2>
       <div class="row"><span class="k" data-i18n="k_rtc_public"></span><span class="v skeleton" id="rtc-public"></span></div>
       <div class="row"><span class="k" data-i18n="k_rtc_match"></span><span class="v skeleton" id="rtc-match"></span></div>
       <div class="row"><span class="k" data-i18n="k_rtc_local"></span><span class="v skeleton" id="rtc-local"></span></div>
@@ -288,7 +295,7 @@
     </section>
 
     <section class="card client-only">
-      <h2><span class="ico" aria-hidden="true">🔐</span><span data-i18n="card_perms"></span></h2>
+      <h2><span data-i18n="card_perms"></span></h2>
       <div class="row"><span class="k" data-i18n="k_perm_geo"></span><span class="v skeleton" id="pm-geolocation"></span></div>
       <div class="row"><span class="k" data-i18n="k_perm_notif"></span><span class="v skeleton" id="pm-notifications"></span></div>
       <div class="row"><span class="k" data-i18n="k_perm_cam"></span><span class="v skeleton" id="pm-camera"></span></div>
@@ -299,18 +306,18 @@
     </section>
 
     <section class="card client-only">
-      <h2><span class="ico" aria-hidden="true">🔤</span><span data-i18n="card_fonts"></span></h2>
+      <h2><span data-i18n="card_fonts"></span></h2>
       <div class="row"><span class="k" data-i18n="k_fonts_found"></span><span class="v skeleton" id="fonts-count"></span></div>
       <div class="list" id="fonts-list">…</div>
     </section>
 
     <section class="card wide">
-      <h2><span class="ico" aria-hidden="true">📨</span><span data-i18n="card_headers"></span></h2>
+      <h2><span data-i18n="card_headers"></span></h2>
       <pre class="raw" id="headers">…</pre>
     </section>
 
     <section class="card wide">
-      <h2><span class="ico" aria-hidden="true">🧾</span><span data-i18n="card_raw"></span></h2>
+      <h2><span data-i18n="card_raw"></span></h2>
       <pre class="raw" id="raw-json">…</pre>
     </section>
 

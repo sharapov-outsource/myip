@@ -101,7 +101,7 @@ Opens on http://localhost:3021
 npm test
 ```
 
-Syntax check, dictionary consistency and 47 API checks against a live server. No
+Syntax check, dictionary consistency and 53 API checks against a live server. No
 upstream services involved, so it works offline.
 
 ## Configuration
@@ -155,6 +155,17 @@ Icons come from [favicon.svg](public/favicon.svg):
 ```bash
 rsvg-convert -w 512 -h 512 public/favicon.svg -o public/icon-512.png
 ```
+
+## Design
+
+Colours, type and spacing follow the [sharapov.biz](https://sharapov.biz) design
+system: warm paper ground, graphite ink, a single indigo accent, Geist for display
+and Inter for body copy, JetBrains Mono for values. The dark variant keeps the same
+hues on the warm graphite instead of switching to neutral grey.
+
+Fonts are self-hosted in [public/fonts](public/fonts) rather than loaded from Google
+Fonts — the page calls no third parties, and the CSP only allows `'self'`. Latin and
+Cyrillic subsets are bundled; other scripts fall back to system fonts.
 
 ## Deployment
 
@@ -304,7 +315,7 @@ npm install && npm start
 npm test
 ```
 
-Синтаксис, согласованность словарей и 47 проверок API на поднятом сервере. Внешние
+Синтаксис, согласованность словарей и 53 проверки API на поднятом сервере. Внешние
 сервисы не задействованы — работает без сети.
 
 ### Настройки
@@ -358,6 +369,17 @@ Head страницы формируется на сервере, потому �
 ```bash
 rsvg-convert -w 512 -h 512 public/favicon.svg -o public/icon-512.png
 ```
+
+### Оформление
+
+Цвета, типографика и отступы взяты из дизайн-системы [sharapov.biz](https://sharapov.biz):
+тёплая бумага, графитовые чернила, один индиговый акцент, Geist для заголовков, Inter
+для текста, JetBrains Mono для значений. Тёмная тема держит те же оттенки на тёплом
+графите, а не уходит в нейтральный серый.
+
+Шрифты лежат локально в [public/fonts](public/fonts), а не грузятся с Google Fonts:
+страница не обращается к третьим сторонам, да и CSP разрешает только `'self'`. В
+комплекте латиница и кириллица, остальные письменности берут системные шрифты.
 
 ### Развёртывание
 

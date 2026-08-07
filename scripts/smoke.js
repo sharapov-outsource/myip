@@ -98,6 +98,17 @@ async function run() {
   check('seo: head follows Accept-Language', ruHtml.includes('<html lang="ru"'));
   check('seo: localized title', /<title>Мой IP/.test(ruHtml));
 
+  // Self-hosted fonts: the page must not fall back to system faces.
+  const fontsCss = await fetch(`${base}/static/fonts.css`);
+  check('fonts: stylesheet', fontsCss.ok);
+  const fontsBody = await fontsCss.text();
+  for (const family of ['Geist', 'Inter', 'JetBrains Mono']) {
+    check(`fonts: ${family} declared`, fontsBody.includes(`'${family}'`));
+  }
+  const woff2 = await fetch(`${base}/static/fonts/inter-400-latin.woff2`);
+  check('fonts: woff2 served', woff2.ok && (woff2.headers.get('content-type') || '').includes('font/woff2'));
+  check('html links fonts.css', html.includes('/static/fonts.css'));
+
   // Icons, manifest and crawler files.
   for (const [route, type] of [
     ['/favicon.ico', 'image'], ['/favicon.svg', 'image/svg+xml'],
