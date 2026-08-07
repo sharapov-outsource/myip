@@ -2,61 +2,22 @@
 
 **Русская версия — [ниже](#русская-версия).**
 
-A service that reports your external IP address and everything technical that can be
-learned about a visitor. Works both as a page and as an API.
+External IP address and every piece of technical information available about a
+visitor. Works as a page and as an API.
 
-```
-https://myip.sharapov.biz                    page about your own address
-https://myip.sharapov.biz/8.8.8.8            page about an arbitrary address
-https://myip.sharapov.biz?output=json        data instead of the page
-https://myip.sharapov.biz/8.8.8.8?output=yaml
-```
+Live: **https://myip.sharapov.biz**
 
-## What it shows
+## Usage
 
-Server side (included in the JSON/YAML output):
-
-| Section | Contents |
+| URL | Result |
 | --- | --- |
-| IP | Address, protocol version, reverse DNS (PTR), subnet |
-| Provider | ISP, organisation, ASN, domain, network type, route, abuse contact |
-| Registry | RDAP/WHOIS: network name, range, CIDR, block holder, dates, RIR |
-| Geolocation | Country, region, city, postal code, coordinates, continent, currency, time zone |
-| Geocoding | Coordinates resolved to a postal address, down to the street, in the requested language |
-| Reputation | VPN, proxy, Tor, data centre, mobile network and blacklist flags |
+| `/` | Page about your own address |
+| `/8.8.8.8` | Page about an arbitrary address |
+| `/?output=json` | Data instead of the page |
+| `/8.8.8.8?output=yaml` | Data for a given address |
 
-Browser side (page only; also included in the downloadable JSON):
-
-| Section | Contents |
-| --- | --- |
-| Browser | Name and version, engine, languages, cookies, DNT/GPC, ad blocker, plugins |
-| System | OS, platform version, architecture, model, cores, memory, battery, storage |
-| Screen | Resolution, available area, window, DPI, colour depth, colour gamut, HDR |
-| Graphics | GPU, WebGL, WebGPU, canvas and audio fingerprints, combined browser hash |
-| WebRTC | Public address via STUN and local addresses — a VPN leak check |
-| Precise location | GPS/Wi-Fi coordinates on request, their address and the distance from the IP location |
-| Permissions | Permission states, number of microphones, speakers and cameras, installed fonts |
-| Headers | HTTP headers as the server sees them |
-
-Plus warnings: time zone not matching the IP, a detected VPN or data centre,
-a WebRTC leak, a private address.
-
-## API
-
-| Route | Response |
-| --- | --- |
-| `GET /` | Page for browsers, JSON for console clients |
-| `GET /<ip>` | The same for a given address |
-| `GET /api` · `GET /api/<ip>` | Always data |
-| `GET /api/geocode?lat=&lon=` | Reverse geocoding for coordinates |
-| `GET /api/headers` | Request headers as the server sees them |
-| `GET /healthz` | Liveness probe and cache stats |
-
-Parameters: `output=json|yaml|html`, `lang=<code>`, `geocode=false` (skip geocoding —
-faster), `download=1` (serve as a file).
-
-The format is chosen automatically: `curl`, `wget`, `httpie` and friends get JSON with
-no parameters, browsers get the page. `Accept: application/json` works too.
+`curl`, `wget`, `httpie` and similar clients get JSON with no parameters; browsers
+get the page. `Accept: application/json` works too.
 
 ```bash
 curl https://myip.sharapov.biz
@@ -66,25 +27,63 @@ curl https://myip.sharapov.biz
 curl -s "https://myip.sharapov.biz/1.1.1.1?output=yaml&lang=en"
 ```
 
-Errors come back as JSON with `statusCode`, `error` and `message`. Private and
-reserved ranges are answered with `bogon: true` without any outbound call.
+## API
+
+| Route | Response |
+| --- | --- |
+| `GET /` · `GET /<ip>` | Page for browsers, JSON for console clients |
+| `GET /api` · `GET /api/<ip>` | Always data |
+| `GET /api/geocode?lat=&lon=` | Reverse geocoding for coordinates |
+| `GET /api/headers` | Request headers as the server sees them |
+| `GET /healthz` | Liveness probe and cache stats |
+
+Parameters: `output=json|yaml|html`, `lang=<code>`, `geocode=false` (skip geocoding,
+faster), `download=1` (serve as a file).
+
+Errors are JSON with `statusCode`, `error` and `message`. Private and reserved ranges
+answer with `bogon: true` and no outbound call.
+
+## What it shows
+
+Server side, included in the JSON/YAML output:
+
+| Section | Contents |
+| --- | --- |
+| IP | Address, protocol version, reverse DNS (PTR), subnet |
+| Provider | ISP, organisation, ASN, domain, network type, route, abuse contact |
+| Registry | RDAP/WHOIS: network name, range, CIDR, block holder, dates, RIR |
+| Geolocation | Country, region, city, postal code, coordinates, continent, currency, time zone |
+| Geocoding | Coordinates resolved to a postal address, down to the street |
+| Reputation | VPN, proxy, Tor, data centre, mobile network and blacklist flags |
+
+Browser side, page only, also included in the downloadable JSON:
+
+| Section | Contents |
+| --- | --- |
+| Browser | Name and version, engine, languages, cookies, DNT/GPC, ad blocker, plugins |
+| System | OS, platform version, architecture, model, cores, memory, battery, storage |
+| Screen | Resolution, available area, window, DPI, colour depth, colour gamut, HDR |
+| Graphics | GPU, WebGL, WebGPU, canvas and audio fingerprints, combined browser hash |
+| WebRTC | Public address via STUN and local addresses — a VPN leak check |
+| Precise location | GPS/Wi-Fi coordinates on request, their address and the distance from the IP location |
+| Permissions | Permission states, microphone/speaker/camera counts, installed fonts |
+| Headers | HTTP headers as the server sees them |
+
+The page also warns about a time zone that does not match the IP, a detected VPN or
+data centre, a WebRTC leak and a private address.
 
 ## Languages
 
-The interface is translated into 12 languages: English, Russian, Spanish, Chinese,
-Hindi, Arabic, Portuguese, French, German, Japanese, Turkish and Ukrainian.
+12 languages: English, Russian, Spanish, Chinese, Hindi, Arabic, Portuguese, French,
+German, Japanese, Turkish, Ukrainian. Arabic flips the layout right-to-left.
 
-The language is detected from `navigator.languages` on first visit and remembered in
-`localStorage` once picked manually. Arabic flips the layout right-to-left. Country
-names are localized through `Intl.DisplayNames`, dates and times through
-`Intl.DateTimeFormat`, and the address is requested from the geocoder in the selected
-language.
+The language comes from `navigator.languages` and is remembered in `localStorage`
+once picked manually. The server picks it from `Accept-Language` for the page head.
 
-To add a language: copy the `en` object in [i18n.js](public/i18n.js), translate the
-values and register the code in `LANG_NAMES` and `LANG_LOCALES` (and in `RTL_LANGS`
-for right-to-left scripts). That file is the single source of truth — the server
-reads it too, so nothing else needs editing. `npm run check:i18n` verifies nothing
-was missed.
+To add one: copy the `en` object in [i18n.js](public/i18n.js), translate the values
+and register the code in `LANG_NAMES` and `LANG_LOCALES` — plus `RTL_LANGS` for
+right-to-left scripts. That file is the single source of truth; the server reads it
+too. Run `npm run check:i18n` to verify.
 
 ## Running
 
@@ -102,8 +101,8 @@ Opens on http://localhost:3021
 npm test
 ```
 
-Checks syntax, dictionary consistency, and runs 30 API checks against a live server.
-No upstream services are involved, so the test works offline.
+Syntax check, dictionary consistency and 47 API checks against a live server. No
+upstream services involved, so it works offline.
 
 ## Configuration
 
@@ -112,226 +111,115 @@ No upstream services are involved, so the test works offline.
 | `PORT` | `3021` | Port |
 | `HOSTNAME` | `0.0.0.0` | Interface |
 | `TRUST_PROXY` | `true` | Read the client IP from `CF-Connecting-IP` / `X-Real-IP` / `X-Forwarded-For` |
-| `HSTS` | `false` | Send `Strict-Transport-Security` |
 | `PUBLIC_ORIGIN` | derived from `Host` | Canonical origin for `canonical`, `og:url` and the sitemap |
+| `HSTS` | `false` | Send `Strict-Transport-Security` |
 | `RATE_MAX` | `120` | Overall requests per minute per address |
 | `RATE_LOOKUP_MAX` | `30` | Limit on address lookups |
 | `RATE_GEOCODE_MAX` | `12` | Limit on geocoding |
-| `RATE_BAN` | `8` | How many violations before returning 403 |
+| `RATE_BAN` | `8` | Violations before returning 403 |
 | `MAX_INFLIGHT` | `24` | Ceiling on concurrent calls to upstream services |
-| `CACHE_TTL_MS` | `900000` | Cache lifetime (15 minutes) |
+| `CACHE_TTL_MS` | `900000` | Cache lifetime |
 | `CACHE_MAX` | `5000` | Cache size |
 | `LOG_REQUESTS` | `false` | Log every request |
 
-**Enable `TRUST_PROXY` only behind a reverse proxy.** If the server faces the internet
-directly, a client can forge the header and bypass the limits — set `TRUST_PROXY=false`
-in that case.
+Two settings matter in production:
 
-## SEO and social previews
+- `TRUST_PROXY` only behind a reverse proxy. Facing the internet directly, a client
+  can forge the header and bypass the rate limits.
+- `PUBLIC_ORIGIN` pins the canonical URL. Without it it is built from the `Host`
+  header, which a client controls.
 
-The head is rendered on the server: title, description, `canonical` and the `og:`
-tags are already correct in the markup, because social scrapers and simpler crawlers
-do not execute JavaScript. Language comes from `Accept-Language`, and the response
-carries `Vary: Accept-Language`. Once the page loads, the client updates the same
-tags whenever the visitor switches language.
+## Load protection
 
-`robots.txt` allows the home page and `/static/`, and disallows `/api` and individual
-address pages. Leaving the assets crawlable matters: the page is rendered entirely by
-its scripts, so a crawler blocked from them would index an empty body. Address pages
-also carry `X-Robots-Tag: noindex, follow`.
+Rate limits per address in three tiers (overall, lookups, geocoding), a 15-minute
+response cache, a ceiling of `MAX_INFLIGHT` concurrent outbound calls, and container
+limits: 384 MB, 256 processes, read-only filesystem, unprivileged user.
 
-Set `PUBLIC_ORIGIN` in production. Without it the canonical URL is built from the
-`Host` header, which a client controls.
+Security headers: CSP with no inline scripts, `nosniff`, `X-Frame-Options: DENY`,
+`Referrer-Policy: strict-origin-when-cross-origin`, a restrictive `Permissions-Policy`.
 
-Icons are generated from [favicon.svg](public/favicon.svg):
+## SEO
+
+The page head is rendered server side, because social scrapers and simpler crawlers
+do not run JavaScript: title, description, `canonical` and `og:` tags are correct in
+the markup, localized by `Accept-Language`, with `Vary: Accept-Language` on the
+response. The client updates the same tags when the visitor switches language.
+
+`robots.txt` allows `/` and `/static/`, disallows `/api` and address pages. Keeping
+the assets crawlable is required — the page is rendered by its scripts, so a crawler
+denied access to them indexes an empty body. Address pages send
+`X-Robots-Tag: noindex, follow`.
+
+Icons come from [favicon.svg](public/favicon.svg):
 
 ```bash
 rsvg-convert -w 512 -h 512 public/favicon.svg -o public/icon-512.png
 ```
 
-## Load protection
-
-What the application does:
-
-- **Per-address limits** — three tiers: overall, address lookups, geocoding. Repeat
-  offenders get a 403 instead of a 429 after `RATE_BAN` violations.
-- **Response cache** — 15 minutes per address. Repeat queries for the same IP never
-  leave the box.
-- **Outbound ceiling** — at most `MAX_INFLIGHT` concurrent calls to upstream services;
-  beyond that a 503 is returned. A flood will not turn into thousands of outbound
-  connections or burn through the free geolocation quotas.
-- **Crawler cutoff** — `robots.txt` allows search engines on the home page only, so
-  walking arbitrary addresses creates no load.
-- **Strict headers** — CSP with no inline scripts, `nosniff`, `X-Frame-Options: DENY`,
-  `Referrer-Policy: strict-origin-when-cross-origin`, a restrictive `Permissions-Policy`.
-- **Container limits** — 384 MB of memory, 256 processes, read-only filesystem,
-  unprivileged user, `no-new-privileges`.
-
-What the application cannot do: a real volumetric DDoS never reaches it — the uplink
-and the reverse proxy fall over first. That belongs one layer up, at the network edge:
-
-- **Cloudflare** (the free tier is enough) — proxy the domain, enable Bot Fight Mode
-  and a rate limiting rule on `/api*`. It also supplies `CF-Connecting-IP`, which the
-  service already reads.
-- **Proxy-level limits** — `limit_req` in nginx or `rate_limit` in Caddy as a second
-  line of defence in front of the application.
-- **fail2ban** over the proxy logs for the truly persistent.
-
 ## Deployment
 
-The container listens on `127.0.0.1:3021`; a reverse proxy exposes it to the world.
+[.github/workflows/deploy.yml](.github/workflows/deploy.yml) runs on push to `main`:
+checks, image build, publish to GHCR, deploy over SSH. The container is published on
+`127.0.0.1:3023`, so a reverse proxy has to sit in front of it.
 
-Caddy:
-
-```
-myip.sharapov.biz {
-	encode zstd gzip
-	rate_limit {
-		zone api {
-			key {remote_host}
-			events 60
-			window 1m
-		}
-	}
-	reverse_proxy 127.0.0.1:3021
-}
-```
-
-nginx:
-
-```nginx
-limit_req_zone $binary_remote_addr zone=myip:10m rate=2r/s;
-
-server {
-    server_name myip.sharapov.biz;
-    listen 443 ssl http2;
-
-    location / {
-        limit_req zone=myip burst=20 nodelay;
-        proxy_pass http://127.0.0.1:3021;
-        proxy_set_header Host              $host;
-        proxy_set_header X-Real-IP         $remote_addr;
-        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-### CI/CD
-
-[.github/workflows/deploy.yml](.github/workflows/deploy.yml) runs on every push to
-`main`: it executes the checks, builds the image, publishes it to GHCR and deploys
-over SSH.
-
-Required repository secrets (environment `Prod`): `DEPLOY_HOST`, `DEPLOY_USER`,
-`DEPLOY_SSH_KEY`, `DEPLOY_PORT` (optional), `GHCR_USERNAME`, `GHCR_TOKEN`.
-
-Extra environment variables can be placed in `/opt/myip/.env` on the server — the
-deploy step picks the file up if it exists.
+Repository secrets, environment `Prod`: `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`,
+`DEPLOY_PORT` (optional), `GHCR_USERNAME`, `GHCR_TOKEN`. Extra environment variables
+go in `/opt/myip/.env` on the server; the deploy picks the file up if it exists.
 
 Manually:
 
 ```bash
 docker run -d --name myip --restart unless-stopped --init --read-only \
   --tmpfs /tmp --security-opt no-new-privileges --memory 384m \
-  -e TRUST_PROXY=true -e HSTS=true \
+  -e TRUST_PROXY=true -e HSTS=true -e PUBLIC_ORIGIN=https://myip.sharapov.biz \
   -p 127.0.0.1:3021:3021 ghcr.io/sharapov-outsource/myip:latest
 ```
 
 ## Data sources
 
-Geolocation is queried from five services in parallel (`ipwho.is`, `ipapi.co`,
-`ipinfo.io`, `geojs.io`, `ipapi.is`) and the results are merged field by field: if one
-is unavailable or does not know a value, another fills it in. No API keys are needed.
-Registry records come from RDAP via `rdap.org` with `rdap.db.ripe.net` as a fallback.
-Reverse DNS is resolved by the server itself. Geocoding uses Nominatim (OpenStreetMap)
-with BigDataCloud as a fallback. The map is an embedded OpenStreetMap widget.
+Geolocation is queried from five services in parallel — `ipwho.is`, `ipapi.co`,
+`ipinfo.io`, `geojs.io`, `ipapi.is` — and merged field by field, so one being down
+or incomplete does not break the answer. No API keys needed. Registry data comes from
+RDAP via `rdap.org`, falling back to `rdap.db.ripe.net`. Reverse DNS is resolved by
+the server. Geocoding uses Nominatim with BigDataCloud as a fallback. The map is an
+embedded OpenStreetMap widget.
 
-The free tiers have daily quotas, and Nominatim asks for no more than one request per
-second and forbids bulk usage. The cache and the limits keep traffic within those
-bounds; at noticeable volume it makes sense to move to a paid geocoder or run your own
-Nominatim instance.
+Free tiers have daily quotas and Nominatim asks for at most one request per second.
+The cache and the rate limits keep usage within those bounds.
 
 ## Limitations
 
-- Only the protocol the connection actually arrived over is shown. Detecting both IPv4
-  and IPv6 for the same client requires separate A-only and AAAA-only subdomains,
-  which are not set up.
-- IP geolocation accuracy is a city or a provider node, not a house. Real coordinates
-  come only from the GPS section, and only with the user's permission.
-- Geolocation services sometimes disagree (the same address can be reported in
-  different countries). The merge takes the first non-empty value in source priority
-  order, and the "Data sources" row shows who actually answered.
-- VPN/proxy flags are an upstream service's heuristic, not a fact. False positives on
-  large public resolvers are common.
+- Only the protocol the connection arrived over is shown. Detecting IPv4 and IPv6 for
+  the same client needs separate A-only and AAAA-only subdomains, which do not exist.
+- IP geolocation resolves to a city or a provider node, not a building. Real
+  coordinates come only from the GPS section, with the user's permission.
+- VPN and proxy flags are an upstream heuristic, not a fact. False positives on large
+  public resolvers are common.
 
 ## License
 
-[MIT](LICENSE). Fork it, change it, use it commercially — the only condition is that
-the copyright notice stays in copies of the source.
-
-Pull requests are welcome, translations especially: `npm test` has to pass and the
-dictionaries have to stay consistent.
+[MIT](LICENSE).
 
 ---
 
 ## Русская версия
 
-Сервис определения внешнего IP и всей технической информации, которую можно узнать
-о посетителе. Работает как страница и как API.
+Внешний IP-адрес и вся техническая информация, которую можно узнать о посетителе.
+Работает как страница и как API.
 
-```
-https://myip.sharapov.biz                    страница про ваш адрес
-https://myip.sharapov.biz/8.8.8.8            страница про произвольный адрес
-https://myip.sharapov.biz?output=json        данные вместо страницы
-https://myip.sharapov.biz/8.8.8.8?output=yaml
-```
+Рабочий адрес: **https://myip.sharapov.biz**
 
-### Что показывает
+### Как пользоваться
 
-Серверная часть (попадает в JSON/YAML):
-
-| Раздел | Содержимое |
+| URL | Результат |
 | --- | --- |
-| IP | Адрес, версия протокола, обратный DNS (PTR), подсеть |
-| Провайдер | ISP, организация, ASN, домен, тип сети, маршрут, abuse-контакт |
-| Реестр | RDAP/WHOIS: имя сети, диапазон, CIDR, владелец блока, даты, RIR |
-| Геолокация | Страна, регион, город, индекс, координаты, континент, валюта, часовой пояс |
-| Геокодинг | Координаты → почтовый адрес вплоть до улицы, на языке запроса |
-| Репутация | Признаки VPN, прокси, Tor, дата-центра, мобильной сети, чёрных списков |
+| `/` | Страница про ваш адрес |
+| `/8.8.8.8` | Страница про произвольный адрес |
+| `/?output=json` | Данные вместо страницы |
+| `/8.8.8.8?output=yaml` | Данные по указанному адресу |
 
-Браузерная часть (только на странице, в скачиваемый JSON тоже попадает):
-
-| Раздел | Содержимое |
-| --- | --- |
-| Браузер | Название и версия, движок, языки, cookies, DNT/GPC, блокировщик, плагины |
-| Система | ОС, версия платформы, архитектура, модель, ядра, память, батарея, хранилище |
-| Экран | Разрешение, рабочая область, окно, DPI, глубина цвета, цветовой охват, HDR |
-| Графика | Видеокарта, WebGL, WebGPU, canvas- и audio-отпечатки, итоговый хэш браузера |
-| WebRTC | Публичный адрес через STUN и локальные адреса — проверка утечки под VPN |
-| Точная геолокация | GPS/Wi-Fi координаты по запросу, их адрес и расхождение с IP-геолокацией |
-| Разрешения | Состояние прав, количество микрофонов, динамиков, камер, шрифты |
-| Заголовки | HTTP-заголовки, как их видит сервер |
-
-Плюс предупреждения: несовпадение часового пояса с IP, обнаруженный VPN или
-дата-центр, утечка WebRTC, приватный адрес.
-
-### API
-
-| Маршрут | Ответ |
-| --- | --- |
-| `GET /` | Страница для браузера, JSON для консольных клиентов |
-| `GET /<ip>` | То же для указанного адреса |
-| `GET /api` · `GET /api/<ip>` | Всегда данные |
-| `GET /api/geocode?lat=&lon=` | Обратный геокодинг координат |
-| `GET /api/headers` | Заголовки запроса глазами сервера |
-| `GET /healthz` | Проверка живости, состояние кеша |
-
-Параметры: `output=json|yaml|html`, `lang=<код>`, `geocode=false` (пропустить
-геокодинг — быстрее), `download=1` (отдать файлом).
-
-Формат выбирается автоматически: `curl`, `wget`, `httpie` и подобные получают JSON
-без параметров, браузер — страницу. Работает и `Accept: application/json`.
+`curl`, `wget`, `httpie` и подобные получают JSON без параметров, браузер — страницу.
+Работает и `Accept: application/json`.
 
 ```bash
 curl https://myip.sharapov.biz
@@ -341,23 +229,64 @@ curl https://myip.sharapov.biz
 curl -s "https://myip.sharapov.biz/1.1.1.1?output=yaml&lang=ru"
 ```
 
-Ошибки приходят в JSON с полями `statusCode`, `error`, `message`.
-Приватные и служебные диапазоны отдаются с `bogon: true` без обращения наружу.
+### API
+
+| Маршрут | Ответ |
+| --- | --- |
+| `GET /` · `GET /<ip>` | Страница для браузера, JSON для консольных клиентов |
+| `GET /api` · `GET /api/<ip>` | Всегда данные |
+| `GET /api/geocode?lat=&lon=` | Обратный геокодинг координат |
+| `GET /api/headers` | Заголовки запроса глазами сервера |
+| `GET /healthz` | Проверка живости и состояние кеша |
+
+Параметры: `output=json|yaml|html`, `lang=<код>`, `geocode=false` (без геокодинга,
+быстрее), `download=1` (отдать файлом).
+
+Ошибки — JSON с полями `statusCode`, `error`, `message`. Приватные и служебные
+диапазоны отдаются с `bogon: true` без обращения наружу.
+
+### Что показывает
+
+Серверная часть, попадает в JSON/YAML:
+
+| Раздел | Содержимое |
+| --- | --- |
+| IP | Адрес, версия протокола, обратный DNS (PTR), подсеть |
+| Провайдер | ISP, организация, ASN, домен, тип сети, маршрут, abuse-контакт |
+| Реестр | RDAP/WHOIS: имя сети, диапазон, CIDR, владелец блока, даты, RIR |
+| Геолокация | Страна, регион, город, индекс, координаты, континент, валюта, часовой пояс |
+| Геокодинг | Координаты → почтовый адрес вплоть до улицы |
+| Репутация | Признаки VPN, прокси, Tor, дата-центра, мобильной сети, чёрных списков |
+
+Браузерная часть, только на странице, попадает в скачиваемый JSON:
+
+| Раздел | Содержимое |
+| --- | --- |
+| Браузер | Название и версия, движок, языки, cookies, DNT/GPC, блокировщик, плагины |
+| Система | ОС, версия платформы, архитектура, модель, ядра, память, батарея, хранилище |
+| Экран | Разрешение, рабочая область, окно, DPI, глубина цвета, цветовой охват, HDR |
+| Графика | Видеокарта, WebGL, WebGPU, canvas- и audio-отпечатки, итоговый хэш браузера |
+| WebRTC | Публичный адрес через STUN и локальные адреса — проверка утечки под VPN |
+| Точная геолокация | GPS/Wi-Fi координаты по запросу, их адрес и расхождение с IP |
+| Разрешения | Состояние прав, число микрофонов, динамиков и камер, шрифты |
+| Заголовки | HTTP-заголовки, как их видит сервер |
+
+Страница дополнительно предупреждает о несовпадении часового пояса с IP,
+обнаруженном VPN или дата-центре, утечке WebRTC и приватном адресе.
 
 ### Языки
 
-Интерфейс переведён на 12 языков: английский, русский, испанский, китайский, хинди,
-арабский, португальский, французский, немецкий, японский, турецкий, украинский.
+12 языков: английский, русский, испанский, китайский, хинди, арабский,
+португальский, французский, немецкий, японский, турецкий, украинский. Для арабского
+вёрстка разворачивается справа налево.
 
-Язык определяется из `navigator.languages` при первом заходе и запоминается в
-`localStorage` после ручного выбора. Для арабского вёрстка разворачивается справа
-налево. Названия стран локализуются через `Intl.DisplayNames`, даты и время — через
-`Intl.DateTimeFormat`, адрес запрашивается у геокодера на выбранном языке.
+Язык берётся из `navigator.languages` и запоминается в `localStorage` после ручного
+выбора. Сервер определяет его по `Accept-Language` для head страницы.
 
 Чтобы добавить язык: скопируйте объект `en` в [i18n.js](public/i18n.js), переведите
-значения и впишите код в `LANG_NAMES` и `LANG_LOCALES` (и в `RTL_LANGS`, если письмо
-справа налево). Этот файл — единственный источник правды, сервер читает его же, так
-что больше нигде править не нужно. `npm run check:i18n` проверит, что ничего не забыто.
+значения и впишите код в `LANG_NAMES` и `LANG_LOCALES`, а для письма справа налево
+ещё и в `RTL_LANGS`. Этот файл — единственный источник правды, сервер читает его же.
+Проверить: `npm run check:i18n`.
 
 ### Запуск
 
@@ -375,8 +304,8 @@ npm install && npm start
 npm test
 ```
 
-Проверяет синтаксис, согласованность словарей и прогоняет 30 проверок API
-на поднятом сервере. Внешние сервисы не задействованы — тест работает без сети.
+Синтаксис, согласованность словарей и 47 проверок API на поднятом сервере. Внешние
+сервисы не задействованы — работает без сети.
 
 ### Настройки
 
@@ -385,124 +314,91 @@ npm test
 | `PORT` | `3021` | Порт |
 | `HOSTNAME` | `0.0.0.0` | Интерфейс |
 | `TRUST_PROXY` | `true` | Читать IP клиента из `CF-Connecting-IP` / `X-Real-IP` / `X-Forwarded-For` |
-| `HSTS` | `false` | Отдавать `Strict-Transport-Security` |
 | `PUBLIC_ORIGIN` | из заголовка `Host` | Канонический origin для `canonical`, `og:url` и sitemap |
+| `HSTS` | `false` | Отдавать `Strict-Transport-Security` |
 | `RATE_MAX` | `120` | Общий лимит запросов в минуту на адрес |
 | `RATE_LOOKUP_MAX` | `30` | Лимит на просмотры адресов |
 | `RATE_GEOCODE_MAX` | `12` | Лимит на геокодинг |
-| `RATE_BAN` | `8` | После скольких превышений отдавать 403 |
+| `RATE_BAN` | `8` | Сколько превышений до 403 |
 | `MAX_INFLIGHT` | `24` | Потолок одновременных обращений к внешним сервисам |
-| `CACHE_TTL_MS` | `900000` | Время жизни кеша (15 минут) |
+| `CACHE_TTL_MS` | `900000` | Время жизни кеша |
 | `CACHE_MAX` | `5000` | Размер кеша |
 | `LOG_REQUESTS` | `false` | Писать каждый запрос в лог |
 
-**`TRUST_PROXY` включайте только за обратным прокси.** Если сервер смотрит в
-интернет напрямую, клиент подделает заголовок и обойдёт лимиты — тогда ставьте
-`TRUST_PROXY=false`.
+Две настройки важны в продакшене:
 
-### SEO и превью ссылок
+- `TRUST_PROXY` включайте только за обратным прокси. Если сервер смотрит в интернет
+  напрямую, клиент подделает заголовок и обойдёт лимиты.
+- `PUBLIC_ORIGIN` фиксирует канонический адрес. Без него он собирается из заголовка
+  `Host`, а его контролирует клиент.
 
-Head формируется на сервере: заголовок, описание, `canonical` и `og:`-теги уже
-корректны в разметке, потому что соцсети и часть краулеров не исполняют JavaScript.
-Язык берётся из `Accept-Language`, ответ отдаётся с `Vary: Accept-Language`. После
-загрузки клиент обновляет те же теги при переключении языка.
+### Защита от нагрузки
 
-`robots.txt` разрешает главную и `/static/`, запрещает `/api` и страницы отдельных
-адресов. Оставить ассеты открытыми принципиально: страница целиком рисуется
-скриптами, и краулер без доступа к ним проиндексировал бы пустое тело. На страницах
-адресов дополнительно стоит `X-Robots-Tag: noindex, follow`.
+Лимиты по адресу в три уровня (общий, просмотры, геокодинг), кеш ответов на 15 минут,
+потолок в `MAX_INFLIGHT` одновременных исходящих запросов и ограничения контейнера:
+384 МБ, 256 процессов, read-only ФС, непривилегированный пользователь.
 
-В продакшене задавайте `PUBLIC_ORIGIN`. Без него канонический адрес собирается из
-заголовка `Host`, а его контролирует клиент.
+Заголовки безопасности: CSP без inline-скриптов, `nosniff`, `X-Frame-Options: DENY`,
+`Referrer-Policy: strict-origin-when-cross-origin`, ограничивающий `Permissions-Policy`.
 
-Иконки генерируются из [favicon.svg](public/favicon.svg):
+### SEO
+
+Head страницы формируется на сервере, потому что соцсети и часть краулеров не
+исполняют JavaScript: заголовок, описание, `canonical` и `og:`-теги корректны прямо
+в разметке, локализованы по `Accept-Language`, ответ идёт с `Vary: Accept-Language`.
+Клиент обновляет те же теги при переключении языка.
+
+`robots.txt` разрешает `/` и `/static/`, запрещает `/api` и страницы адресов.
+Оставить ассеты открытыми обязательно: страница рисуется скриптами, и краулер без
+доступа к ним проиндексирует пустое тело. Страницы адресов отдаются с
+`X-Robots-Tag: noindex, follow`.
+
+Иконки собираются из [favicon.svg](public/favicon.svg):
 
 ```bash
 rsvg-convert -w 512 -h 512 public/favicon.svg -o public/icon-512.png
 ```
 
-### Защита от нагрузки
-
-Что делает приложение:
-
-- **Лимиты по адресу** — три уровня: общий, на просмотры адресов, на геокодинг.
-  Повторные нарушители после `RATE_BAN` превышений получают 403 вместо 429.
-- **Кеш ответов** — 15 минут на адрес. Повторные запросы одного IP наружу не ходят.
-- **Потолок исходящих** — не более `MAX_INFLIGHT` одновременных обращений к внешним
-  сервисам; сверх этого приходит 503. Наплыв не превратится в тысячи исходящих
-  соединений и не сожжёт бесплатные квоты гео-сервисов.
-- **Отсечка ботов** — `robots.txt` пускает поисковики только на главную, чтобы обход
-  произвольных адресов не создавал нагрузку.
-- **Жёсткие заголовки** — CSP без inline-скриптов, `nosniff`, `X-Frame-Options: DENY`,
-  `Referrer-Policy: strict-origin-when-cross-origin`, ограничивающий `Permissions-Policy`.
-- **Ограничения контейнера** — 384 МБ памяти, 256 процессов, read-only ФС,
-  непривилегированный пользователь, `no-new-privileges`.
-
-Чего приложение не может: настоящий объёмный DDoS до него просто не дойдёт —
-канал и обратный прокси лягут раньше. Это задача уровня выше, и решается она
-на границе сети:
-
-- **Cloudflare** (бесплатного тарифа достаточно) — проксирование домена, Bot Fight
-  Mode и правило rate limiting на `/api*`. Заодно приходит `CF-Connecting-IP`,
-  который сервис уже умеет читать.
-- **Лимиты на прокси** — `limit_req` в nginx или `rate_limit` в Caddy как второй
-  рубеж перед приложением.
-- **fail2ban** по логам прокси для совсем настырных.
-
 ### Развёртывание
 
-Контейнер слушает `127.0.0.1:3021`, наружу его выставляет обратный прокси.
-Примеры конфигураций Caddy и nginx — в английской части выше.
+[.github/workflows/deploy.yml](.github/workflows/deploy.yml) на пуш в `main`:
+проверки, сборка образа, публикация в GHCR, деплой по SSH. Контейнер публикуется на
+`127.0.0.1:3023`, наружу его выставляет обратный прокси.
 
-CI/CD: [.github/workflows/deploy.yml](.github/workflows/deploy.yml) на пуш в `main`
-прогоняет проверки, собирает образ, публикует в GHCR и разворачивает по SSH.
-
-Нужные секреты репозитория (окружение `Prod`): `DEPLOY_HOST`, `DEPLOY_USER`,
-`DEPLOY_SSH_KEY`, `DEPLOY_PORT` (необязательно), `GHCR_USERNAME`, `GHCR_TOKEN`.
-
-Дополнительные переменные окружения можно положить в `/opt/myip/.env` на сервере —
-деплой подхватит файл, если он есть.
+Секреты репозитория, окружение `Prod`: `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`,
+`DEPLOY_PORT` (необязательно), `GHCR_USERNAME`, `GHCR_TOKEN`. Дополнительные
+переменные окружения кладутся в `/opt/myip/.env` на сервере — деплой подхватит файл,
+если он есть.
 
 Вручную:
 
 ```bash
 docker run -d --name myip --restart unless-stopped --init --read-only \
   --tmpfs /tmp --security-opt no-new-privileges --memory 384m \
-  -e TRUST_PROXY=true -e HSTS=true \
+  -e TRUST_PROXY=true -e HSTS=true -e PUBLIC_ORIGIN=https://myip.sharapov.biz \
   -p 127.0.0.1:3021:3021 ghcr.io/sharapov-outsource/myip:latest
 ```
 
 ### Источники данных
 
-Геолокация опрашивается сразу у пяти сервисов параллельно (`ipwho.is`, `ipapi.co`,
-`ipinfo.io`, `geojs.io`, `ipapi.is`), результаты сливаются по полям: если один
-недоступен или не знает какой-то параметр, его подставит другой. Ни один ключ API
-не нужен. Регистрационные данные — RDAP через `rdap.org` с запасным
-`rdap.db.ripe.net`. Обратный DNS сервер резолвит сам. Геокодинг — Nominatim
-(OpenStreetMap) с запасным BigDataCloud. Карта — встраиваемый виджет OpenStreetMap.
+Геолокация опрашивается у пяти сервисов параллельно — `ipwho.is`, `ipapi.co`,
+`ipinfo.io`, `geojs.io`, `ipapi.is` — и сливается по полям, так что недоступность или
+неполнота одного не ломает ответ. Ключи API не нужны. Регистрационные данные — RDAP
+через `rdap.org` с запасным `rdap.db.ripe.net`. Обратный DNS сервер резолвит сам.
+Геокодинг — Nominatim с запасным BigDataCloud. Карта — виджет OpenStreetMap.
 
-У бесплатных тарифов есть суточные квоты, а Nominatim просит не больше запроса в
-секунду и запрещает массовое использование. Кеш и лимиты держат нагрузку в этих
-рамках; при заметном трафике имеет смысл перейти на платный геокодер или поднять
-свой инстанс Nominatim.
+У бесплатных тарифов есть суточные квоты, Nominatim просит не больше запроса в
+секунду. Кеш и лимиты держат нагрузку в этих рамках.
 
 ### Ограничения
 
-- Показывается протокол, по которому пришло соединение. Определить одновременно
-  IPv4 и IPv6 одного клиента можно только через отдельные A- и AAAA-поддомены —
-  сейчас этого нет.
+- Показывается только протокол, по которому пришло соединение. Чтобы определить у
+  одного клиента и IPv4, и IPv6, нужны отдельные A- и AAAA-поддомены, их нет.
 - Точность IP-геолокации — город или узел провайдера, а не дом. Реальные координаты
-  даёт только раздел с GPS, и то с разрешения пользователя.
-- Гео-сервисы иногда расходятся в показаниях (у одного адреса могут быть разные
-  страны). Слияние берёт первое непустое значение в порядке приоритета источников,
-  а строка «Источники данных» показывает, кто реально ответил.
-- Признаки VPN/прокси — эвристика внешнего сервиса, а не факт. Ложные срабатывания
+  даёт только раздел с GPS и только с разрешения пользователя.
+- Признаки VPN и прокси — эвристика внешнего сервиса, а не факт. Ложные срабатывания
   на крупных публичных резолверах обычны.
 
 ### Лицензия
 
-[MIT](LICENSE). Форкайте, меняйте, используйте коммерчески — единственное условие
-в том, чтобы копирайт оставался в копиях исходников.
-
-Pull request'ы приветствуются, особенно переводы: `npm test` должен проходить,
-словари — оставаться согласованными.
+[MIT](LICENSE).
