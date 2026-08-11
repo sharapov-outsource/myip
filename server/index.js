@@ -261,7 +261,35 @@ function renderHtml(req) {
     .replaceAll('{{DESCRIPTION}}', attr(dict.subtitle))
     .replaceAll('{{URL}}', attr(url))
     .replaceAll('{{ORIGIN}}', attr(origin))
-    .replaceAll('{{OG_LOCALE}}', attr((LANG_LOCALES[lang] || lang).replace('-', '_')));
+    .replaceAll('{{OG_LOCALE}}', attr((LANG_LOCALES[lang] || lang).replace('-', '_')))
+    .replaceAll('{{SERVICES}}', renderServiceLinks(dict));
+}
+
+/**
+ * The strip of sibling services in the footer.
+ *
+ * The list is static on purpose: fetching it would make five independent
+ * containers depend on one another being up, to draw a footer. It is rendered
+ * here rather than by the client so that it is in the markup a crawler reads,
+ * already in the language the request asked for.
+ */
+const SERVICES = [
+  { slug: 'myip', host: 'myip.sharapov.biz', key: 'svc_myip' },
+  { slug: 'myssl', host: 'myssl.sharapov.biz', key: 'svc_myssl' },
+  { slug: 'mydns', host: 'mydns.sharapov.biz', key: 'svc_mydns' },
+  { slug: 'mymx', host: 'mymx.sharapov.biz', key: 'svc_mymx' },
+  { slug: 'myheaders', host: 'myheaders.sharapov.biz', key: 'svc_myheaders' },
+];
+
+function renderServiceLinks(dict) {
+  const items = SERVICES.map(service => {
+    const name = attr(dict[service.key] || service.slug);
+    if (service.slug === 'myip') {
+      return `<span class="svc current" aria-current="page">${name}</span>`;
+    }
+    return `<a class="svc" href="https://${service.host}/">${name}</a>`;
+  });
+  return `<nav class="services" aria-label="sharapov.biz tools">${items.join('')}</nav>`;
 }
 
 function sendHtml(req, reply) {

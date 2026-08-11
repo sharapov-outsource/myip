@@ -30,6 +30,13 @@ window.LANG_LOCALES = {
 window.I18N = {};
 
 window.I18N.en = {
+  /* The sibling services, named as the rest of the family names them. */
+  svc_myip: "My IP",
+  svc_myssl: "SSL Test",
+  svc_mydns: "DNS Check",
+  svc_mymx: "Mail Check",
+  svc_myheaders: "Headers Check",
+
   title: 'My IP — everything visible about your connection',
   h1: 'My IP and everything visible about you',
   subtitle: 'External address, ISP, geolocation, geocoding and browser fingerprint',
@@ -307,6 +314,13 @@ window.I18N.en = {
 };
 
 window.I18N.ru = {
+  /* The sibling services, named as the rest of the family names them. */
+  svc_myip: "Мой IP",
+  svc_myssl: "Проверка SSL",
+  svc_mydns: "Проверка DNS",
+  svc_mymx: "Проверка почты",
+  svc_myheaders: "Проверка заголовков",
+
   title: 'Мой IP — вся техническая информация о подключении',
   h1: 'Мой IP и всё, что о вас видно',
   subtitle: 'Внешний адрес, провайдер, геолокация, геокодинг и отпечаток браузера',
@@ -584,6 +598,13 @@ window.I18N.ru = {
 };
 
 window.I18N.es = {
+  /* The sibling services, named as the rest of the family names them. */
+  svc_myip: "Mi IP",
+  svc_myssl: "Prueba SSL",
+  svc_mydns: "Comprobación DNS",
+  svc_mymx: "Comprobación de correo",
+  svc_myheaders: "Comprobación de cabeceras",
+
   title: 'Mi IP — toda la información técnica de tu conexión',
   h1: 'Mi IP y todo lo que se ve de ti',
   subtitle: 'Dirección externa, proveedor, geolocalización, geocodificación y huella del navegador',
@@ -861,6 +882,13 @@ window.I18N.es = {
 };
 
 window.I18N.de = {
+  /* The sibling services, named as the rest of the family names them. */
+  svc_myip: "Meine IP",
+  svc_myssl: "SSL-Test",
+  svc_mydns: "DNS-Prüfung",
+  svc_mymx: "Mail-Prüfung",
+  svc_myheaders: "Header-Prüfung",
+
   title: 'Meine IP — alle technischen Daten zu Ihrer Verbindung',
   h1: 'Meine IP und alles, was von Ihnen sichtbar ist',
   subtitle: 'Externe Adresse, Provider, Geolokalisierung, Geokodierung und Browser-Fingerabdruck',
@@ -1138,6 +1166,13 @@ window.I18N.de = {
 };
 
 window.I18N.fr = {
+  /* The sibling services, named as the rest of the family names them. */
+  svc_myip: "Mon IP",
+  svc_myssl: "Test SSL",
+  svc_mydns: "Contrôle DNS",
+  svc_mymx: "Contrôle e-mail",
+  svc_myheaders: "Contrôle des en-têtes",
+
   title: 'Mon IP — toutes les informations techniques sur votre connexion',
   h1: 'Mon IP et tout ce que l’on voit de vous',
   subtitle: 'Adresse externe, fournisseur, géolocalisation, géocodage et empreinte du navigateur',
@@ -1415,6 +1450,13 @@ window.I18N.fr = {
 };
 
 window.I18N.pt = {
+  /* The sibling services, named as the rest of the family names them. */
+  svc_myip: "Meu IP",
+  svc_myssl: "Teste SSL",
+  svc_mydns: "Verificação de DNS",
+  svc_mymx: "Verificação de e-mail",
+  svc_myheaders: "Verificação de cabeçalhos",
+
   title: 'Meu IP — todas as informações técnicas da sua conexão',
   h1: 'Meu IP e tudo o que se vê sobre você',
   subtitle: 'Endereço externo, provedor, geolocalização, geocodificação e impressão digital do navegador',
@@ -1692,6 +1734,13 @@ window.I18N.pt = {
 };
 
 window.I18N.uk = {
+  /* The sibling services, named as the rest of the family names them. */
+  svc_myip: "Мій IP",
+  svc_myssl: "Перевірка SSL",
+  svc_mydns: "Перевірка DNS",
+  svc_mymx: "Перевірка пошти",
+  svc_myheaders: "Перевірка заголовків",
+
   title: 'Мій IP — уся технічна інформація про з’єднання',
   h1: 'Мій IP і все, що про вас видно',
   subtitle: 'Зовнішня адреса, провайдер, геолокація, геокодування та відбиток браузера',
@@ -1969,6 +2018,13 @@ window.I18N.uk = {
 };
 
 window.I18N.tr = {
+  /* The sibling services, named as the rest of the family names them. */
+  svc_myip: "IP’m",
+  svc_myssl: "SSL denetimi",
+  svc_mydns: "DNS denetimi",
+  svc_mymx: "Posta denetimi",
+  svc_myheaders: "Başlık denetimi",
+
   title: 'IP Adresim — bağlantınıza dair tüm teknik bilgiler',
   h1: 'IP adresim ve hakkınızda görünen her şey',
   subtitle: 'Dış adres, sağlayıcı, coğrafi konum, adres çözümleme ve tarayıcı parmak izi',
@@ -2246,6 +2302,13 @@ window.I18N.tr = {
 };
 
 window.I18N.zh = {
+  /* The sibling services, named as the rest of the family names them. */
+  svc_myip: "我的 IP",
+  svc_myssl: "SSL 检测",
+  svc_mydns: "DNS 检测",
+  svc_mymx: "邮件检测",
+  svc_myheaders: "响应头检测",
+
   title: '我的 IP — 关于你连接的全部技术信息',
   h1: '我的 IP 以及别人能看到的一切',
   subtitle: '外网地址、运营商、地理定位、地址解析与浏览器指纹',
@@ -2523,6 +2586,13 @@ window.I18N.zh = {
 };
 
 window.I18N.ja = {
+  /* The sibling services, named as the rest of the family names them. */
+  svc_myip: "My IP",
+  svc_myssl: "SSL 検査",
+  svc_mydns: "DNS 検査",
+  svc_mymx: "メール検査",
+  svc_myheaders: "ヘッダー検査",
+
   title: '私の IP — 接続に関するすべての技術情報',
   h1: '私の IP と、あなたについて見えるすべて',
   subtitle: '外部アドレス、プロバイダー、位置情報、ジオコーディング、ブラウザーフィンガープリント',
@@ -2800,6 +2870,13 @@ window.I18N.ja = {
 };
 
 window.I18N.hi = {
+  /* The sibling services, named as the rest of the family names them. */
+  svc_myip: "मेरा IP",
+  svc_myssl: "SSL जाँच",
+  svc_mydns: "DNS जाँच",
+  svc_mymx: "मेल जाँच",
+  svc_myheaders: "हेडर जाँच",
+
   title: 'मेरा IP — आपके कनेक्शन की पूरी तकनीकी जानकारी',
   h1: 'मेरा IP और आपके बारे में दिखने वाली हर चीज़',
   subtitle: 'बाहरी पता, प्रदाता, भू-स्थान, जियोकोडिंग और ब्राउज़र फ़िंगरप्रिंट',
@@ -3077,6 +3154,13 @@ window.I18N.hi = {
 };
 
 window.I18N.ar = {
+  /* The sibling services, named as the rest of the family names them. */
+  svc_myip: "عنواني",
+  svc_myssl: "فحص SSL",
+  svc_mydns: "فحص DNS",
+  svc_mymx: "فحص البريد",
+  svc_myheaders: "فحص الترويسات",
+
   title: 'عنوان IP الخاص بي — كل المعلومات التقنية عن اتصالك',
   h1: 'عنوان IP الخاص بي وكل ما يظهر عنك',
   subtitle: 'العنوان الخارجي، مزوّد الخدمة، الموقع الجغرافي، الترميز الجغرافي وبصمة المتصفح',

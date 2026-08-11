@@ -279,6 +279,20 @@ footer code{
 }
 footer a{color:var(--brand);text-decoration:none}
 footer a:hover{text-decoration:underline}
+/* The strip of sibling services. The current one is a span, not a link, so
+   there is nothing to click that leads back to the page already open. */
+.services{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:4px 0 20px}
+.services .svc{
+  font-family:var(--mono);font-size:11.5px;
+  border:1px solid var(--line);border-radius:var(--radius-pill);
+  padding:5px 13px;background:var(--card);color:var(--muted);
+  text-decoration:none;transition:border-color var(--t-fast),color var(--t-fast)
+}
+.services a.svc:hover{border-color:var(--text);color:var(--text);text-decoration:none}
+.services .svc.current{
+  border-color:color-mix(in srgb,var(--brand) 45%,transparent);
+  background:var(--brand-tint);color:var(--brand-ink)
+}
 .footer-credit{display:inline-flex;align-items:center;margin-top:18px;opacity:.55;transition:opacity var(--t-fast)}
 .footer-credit:hover{opacity:1}
 .footer-credit img{height:16px;width:auto;display:block}
