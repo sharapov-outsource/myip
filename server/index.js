@@ -68,6 +68,11 @@ const service = await createService({
     geocode: options.query?.geocode !== 'false',
   }),
 
+  /* The page embeds an OpenStreetMap widget to show where the address lands.
+     No other service in the family frames anything, so the closed policy the
+     kit ships has to be opened by exactly this much and no more. */
+  csp: { frameSrc: ['https://www.openstreetmap.org'] },
+
   examples: ['8.8.8.8', '1.1.1.1', '2001:4860:4860::8888'],
 
   usage: {
