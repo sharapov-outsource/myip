@@ -335,6 +335,10 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<!-- The shared dictionary first: i18n.js layers its own strings over it and
+     calls mergeI18N, which lives here. Loading it second, or not at all, takes
+     the whole page down rather than falling back to English. -->
+<script src="/static/kit/i18n-common.js"></script>
 <script src="/static/i18n.js"></script>
 <script src="/static/app.js"></script>
 </body>
