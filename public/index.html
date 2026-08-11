@@ -4,7 +4,7 @@
   sent, so crawlers and social scrapers — which do not run JavaScript — get the
   correct title, description and URLs. The client refines them on language change.
 -->
-<html lang="{{LANG}}" dir="{{DIR}}">
+<html lang="%LANG%" dir="%DIR%">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,27 +14,27 @@
   <!-- Stops iOS from turning IP addresses into telephone links. -->
   <meta name="format-detection" content="telephone=no">
 
-  <title>{{TITLE}}</title>
-  <meta name="description" content="{{DESCRIPTION}}" id="meta-description">
-  <meta name="robots" content="index, follow, max-image-preview:large">
-  <link rel="canonical" href="{{URL}}" id="link-canonical">
+  <title>%TITLE%</title>
+  <meta name="description" content="%DESCRIPTION%" id="meta-description">
+  <meta name="robots" content="%ROBOTS%, max-image-preview:large">
+  <link rel="canonical" href="%URL%" id="link-canonical">
 
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="myip">
-  <meta property="og:url" content="{{URL}}" id="og-url">
-  <meta property="og:locale" content="{{OG_LOCALE}}" id="og-locale">
-  <meta property="og:title" content="{{TITLE}}" id="og-title">
-  <meta property="og:description" content="{{DESCRIPTION}}" id="og-description">
-  <meta property="og:image" content="{{ORIGIN}}/static/og-image.png">
+  <meta property="og:url" content="%URL%" id="og-url">
+  <meta property="og:locale" content="%LOCALE%" id="og-locale">
+  <meta property="og:title" content="%TITLE%" id="og-title">
+  <meta property="og:description" content="%DESCRIPTION%" id="og-description">
+  <meta property="og:image" content="%ORIGIN%/static/og-image.png">
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="myip.sharapov.biz">
 
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="{{TITLE}}" id="twitter-title">
-  <meta name="twitter:description" content="{{DESCRIPTION}}" id="twitter-description">
-  <meta name="twitter:image" content="{{ORIGIN}}/static/og-image.png">
+  <meta name="twitter:title" content="%TITLE%" id="twitter-title">
+  <meta name="twitter:description" content="%DESCRIPTION%" id="twitter-description">
+  <meta name="twitter:image" content="%ORIGIN%/static/og-image.png">
 
   <link rel="icon" href="/favicon.ico" sizes="32x32">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -51,18 +51,17 @@
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "myip",
-    "url": "{{ORIGIN}}/",
+    "url": "%ORIGIN%/",
     "applicationCategory": "UtilitiesApplication",
     "operatingSystem": "Any",
     "browserRequirements": "Requires JavaScript",
-    "description": "{{DESCRIPTION}}",
+    "description": "%DESCRIPTION%",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
     "author": { "@type": "Organization", "name": "Sharapov", "url": "https://sharapov.biz" }
   }
   </script>
 
-  <script src="/static/metrika.js" defer></script>
-  <noscript><div><img src="https://mc.yandex.ru/watch/111343939" style="position:absolute; left:-9999px;" alt=""></div></noscript>
+%ANALYTICS%
 </head>
 <body>
 <div class="wrap">
@@ -324,7 +323,7 @@
   </main>
 
   <footer>
-    {{SERVICES}}
+    %SERVICES%
     <p id="api-hint"></p>
     <p><span data-i18n="footer1"></span><br><span data-i18n="footer2"></span><br><span data-i18n="footer3"></span></p>
     <a class="footer-credit" href="https://sharapov.biz"

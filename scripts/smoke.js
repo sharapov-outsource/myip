@@ -15,7 +15,14 @@ const base = `http://127.0.0.1:${PORT}`;
 
 const server = spawn(process.execPath, ['server/index.js'], {
   cwd: root,
-  env: { ...process.env, PORT: String(PORT), HOSTNAME: '127.0.0.1', TRUST_PROXY: 'false', LOG_LEVEL: 'warn' },
+  env: {
+    ...process.env, PORT: String(PORT), HOSTNAME: '127.0.0.1', TRUST_PROXY: 'false', LOG_LEVEL: 'warn',
+    /* The counter is injected from the environment and hashed into the policy
+       from the finished markup, so without an id there is no inline script and
+       nothing for the analytics checks to look at. Running with one is running
+       the way the deployment does. */
+    METRIKA_ID: process.env.METRIKA_ID || '111343939',
+  },
   stdio: ['ignore', 'pipe', 'pipe'],
 });
 

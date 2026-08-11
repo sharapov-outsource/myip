@@ -27,9 +27,14 @@ window.LANG_LOCALES = {
   pt: 'pt-BR', fr: 'fr-FR', de: 'de-DE', ja: 'ja-JP', tr: 'tr-TR', uk: 'uk-UA',
 };
 
-window.I18N = {};
+/* Layered over the shared dictionary in @sharapov/service-kit: buttons, error
+   messages, severities and the names of the sibling services come from there
+   in all twelve languages, and anything spelled out below wins over it. */
+var OWN = {};
 
-window.I18N.en = {
+OWN.en = {
+  /* The name at the width a report title can spare: "8.8.8.8 — My IP". */
+  title_short: "My IP",
   /* The sibling services, named as the rest of the family names them. */
   svc_myip: "My IP",
   svc_myssl: "SSL Test",
@@ -313,7 +318,9 @@ window.I18N.en = {
   approx: '≈',
 };
 
-window.I18N.ru = {
+OWN.ru = {
+  /* The name at the width a report title can spare: "8.8.8.8 — My IP". */
+  title_short: "Мой IP",
   /* The sibling services, named as the rest of the family names them. */
   svc_myip: "Мой IP",
   svc_myssl: "Проверка SSL",
@@ -597,7 +604,9 @@ window.I18N.ru = {
   approx: '≈',
 };
 
-window.I18N.es = {
+OWN.es = {
+  /* The name at the width a report title can spare: "8.8.8.8 — My IP". */
+  title_short: "Mi IP",
   /* The sibling services, named as the rest of the family names them. */
   svc_myip: "Mi IP",
   svc_myssl: "Prueba SSL",
@@ -881,7 +890,9 @@ window.I18N.es = {
   approx: '≈',
 };
 
-window.I18N.de = {
+OWN.de = {
+  /* The name at the width a report title can spare: "8.8.8.8 — My IP". */
+  title_short: "Meine IP",
   /* The sibling services, named as the rest of the family names them. */
   svc_myip: "Meine IP",
   svc_myssl: "SSL-Test",
@@ -1165,7 +1176,9 @@ window.I18N.de = {
   approx: '≈',
 };
 
-window.I18N.fr = {
+OWN.fr = {
+  /* The name at the width a report title can spare: "8.8.8.8 — My IP". */
+  title_short: "Mon IP",
   /* The sibling services, named as the rest of the family names them. */
   svc_myip: "Mon IP",
   svc_myssl: "Test SSL",
@@ -1449,7 +1462,9 @@ window.I18N.fr = {
   approx: '≈',
 };
 
-window.I18N.pt = {
+OWN.pt = {
+  /* The name at the width a report title can spare: "8.8.8.8 — My IP". */
+  title_short: "Meu IP",
   /* The sibling services, named as the rest of the family names them. */
   svc_myip: "Meu IP",
   svc_myssl: "Teste SSL",
@@ -1733,7 +1748,9 @@ window.I18N.pt = {
   approx: '≈',
 };
 
-window.I18N.uk = {
+OWN.uk = {
+  /* The name at the width a report title can spare: "8.8.8.8 — My IP". */
+  title_short: "Мій IP",
   /* The sibling services, named as the rest of the family names them. */
   svc_myip: "Мій IP",
   svc_myssl: "Перевірка SSL",
@@ -2017,7 +2034,9 @@ window.I18N.uk = {
   approx: '≈',
 };
 
-window.I18N.tr = {
+OWN.tr = {
+  /* The name at the width a report title can spare: "8.8.8.8 — My IP". */
+  title_short: "IP’m",
   /* The sibling services, named as the rest of the family names them. */
   svc_myip: "IP’m",
   svc_myssl: "SSL denetimi",
@@ -2301,7 +2320,9 @@ window.I18N.tr = {
   approx: '≈',
 };
 
-window.I18N.zh = {
+OWN.zh = {
+  /* The name at the width a report title can spare: "8.8.8.8 — My IP". */
+  title_short: "我的 IP",
   /* The sibling services, named as the rest of the family names them. */
   svc_myip: "我的 IP",
   svc_myssl: "SSL 检测",
@@ -2585,7 +2606,9 @@ window.I18N.zh = {
   approx: '约',
 };
 
-window.I18N.ja = {
+OWN.ja = {
+  /* The name at the width a report title can spare: "8.8.8.8 — My IP". */
+  title_short: "My IP",
   /* The sibling services, named as the rest of the family names them. */
   svc_myip: "My IP",
   svc_myssl: "SSL 検査",
@@ -2869,7 +2892,9 @@ window.I18N.ja = {
   approx: '約',
 };
 
-window.I18N.hi = {
+OWN.hi = {
+  /* The name at the width a report title can spare: "8.8.8.8 — My IP". */
+  title_short: "मेरा IP",
   /* The sibling services, named as the rest of the family names them. */
   svc_myip: "मेरा IP",
   svc_myssl: "SSL जाँच",
@@ -3153,7 +3178,9 @@ window.I18N.hi = {
   approx: '≈',
 };
 
-window.I18N.ar = {
+OWN.ar = {
+  /* The name at the width a report title can spare: "8.8.8.8 — My IP". */
+  title_short: "عنواني",
   /* The sibling services, named as the rest of the family names them. */
   svc_myip: "عنواني",
   svc_myssl: "فحص SSL",
@@ -3436,3 +3463,5 @@ window.I18N.ar = {
   unit_bits: 'بت',
   approx: '≈',
 };
+
+window.I18N = window.mergeI18N(OWN);
