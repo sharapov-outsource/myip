@@ -200,17 +200,25 @@ select{
   border-radius:var(--radius-md);padding:12px 15px;font-size:13.5px;line-height:1.55;
   border:1px solid var(--line);background:var(--card);
   display:flex;gap:11px;align-items:flex-start;box-shadow:var(--shadow-sm);
+  /* An alert quotes an address or a time zone, and an IPv6 address has no
+     break opportunity in it. Without one the box cannot narrow to the screen,
+     and on a phone the whole page ends up scrolling sideways. */
+  word-break:break-word;overflow-wrap:anywhere;
 }
+.alert>div{min-width:0}
 .alert code{
   background:var(--brand-tint);color:var(--brand-ink);padding:1px 6px;border-radius:6px;
   font-family:var(--mono);font-size:12.5px;direction:ltr;display:inline-block;
+  max-width:100%;
 }
 .alert.warn{border-color:color-mix(in srgb,var(--warn) 40%,transparent);background:color-mix(in srgb,var(--warn) 7%,var(--card))}
 .alert.bad{border-color:color-mix(in srgb,var(--bad) 40%,transparent);background:color-mix(in srgb,var(--bad) 7%,var(--card))}
 .alert.ok{border-color:color-mix(in srgb,var(--ok) 40%,transparent);background:color-mix(in srgb,var(--ok) 7%,var(--card))}
 
 /* ---------- cards ---------- */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px;align-items:start}
+/* min() keeps the 340px floor from outgrowing a 320px-wide phone, where a
+   fixed floor makes the cards hang off the side of the page. */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(340px,100%),1fr));gap:18px;align-items:start}
 .card{
   background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);
   padding:18px 20px 10px;box-shadow:var(--shadow-sm),var(--inset-hairline);
